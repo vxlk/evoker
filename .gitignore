@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pythons
+pythons/
+
+# Plugins .venv
+.venv/
+
+# Testing
+.pytest_cache/
+.tox/
+coverage.xml
+*.cover
+.coverage
+htmlcov/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project specifics
+wheels/
