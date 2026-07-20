@@ -1,7 +1,7 @@
 import pytest
 import types
 from hypothesis import given, settings, HealthCheck, strategies as st
-from plugin_host.manager import PluginManager
+from plugin_host.manager import PluginManager, PrefixStrategy
 
 def make_dummy_module(code: str):
     mod = types.ModuleType("dummy_plugin")
@@ -69,3 +69,38 @@ def test_fuzz_manifest_parsing(temp_plugins_dir, manager, bad_json):
     # Should safely return None (fail to load) but NEVER crash
     actions = manager.load_plugin(plugin_dir)
     assert actions is None
+
+@given(st.text(), st.text())
+def test_fuzz_prefix_strategy_matching(prefix, random_suffix):
+    """
+    Property test for PrefixStrategy to ensure robust matching and metadata extraction.
+    """
+    strategy = PrefixStrategy(prefix)
+    sig_info = {"parameters": {}}
+    
+    # 1. Valid Extraction
+    # If the function name is perfectly constructed from prefix + suffix
+    valid_name = prefix + random_suffix
+    # Note: if prefix is empty, startswith("") is always True.
+    match = strategy.match(valid_name, sig_info)
+    assert match is not None
+    assert match["menu_name"] == random_suffix
+    
+    # 2. Rejection
+    # If we prepend a character (and prefix is not empty), it should fail to match
+    if prefix:
+        invalid_name = "X" + prefix + random_suffix
+        assert strategy.match(invalid_name, sig_info) is None
+
+@given(st.text(), st.text())
+def test_fuzz_prefix_strategy_no_crash(prefix, random_name):
+    """
+    Ensures PrefixStrategy never crashes on any text input.
+    """
+    strategy = PrefixStrategy(prefix)
+    sig_info = {"parameters": {}}
+    # 3. No Exceptions
+    try:
+        strategy.match(random_name, sig_info)
+    except Exception as e:
+        pytest.fail(f"PrefixStrategy crashed with exception: {e}")

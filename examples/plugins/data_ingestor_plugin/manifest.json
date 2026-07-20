@@ -1,5 +1,0 @@
-{
-    "name": "data_ingestor_plugin",
-    "version": "1.0.0",
-    "description": "Ingests massive datasets into zero-copy PyArrow tables."
-}

@@ -1,5 +1,0 @@
-{
-    "name": "nlp_analyzer_plugin",
-    "version": "1.0.0",
-    "description": "Analyzes PyArrow table data via simulated NLP models."
-}

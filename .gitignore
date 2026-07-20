@@ -28,3 +28,6 @@ venv.bak/
 
 # Project specifics
 wheels/
+build/
+dist/
+test_venv/  

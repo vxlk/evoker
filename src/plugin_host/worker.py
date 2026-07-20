@@ -1,14 +1,29 @@
 import sys
 import logging
+import os
+import json
 from xmlrpc.server import SimpleXMLRPCServer
 from pathlib import Path
-from plugin_host.manager import PluginManager
+from plugin_host.manager import PluginManager, PrefixStrategy, ExactMatchStrategy
 
 logger = logging.getLogger(__name__)
 
 class PluginWorkerRPC:
     def __init__(self, plugins_dir: Path):
-        self.manager = PluginManager()
+        strategies = None
+        if "BEHEMOTH_STRATEGIES" in os.environ:
+            try:
+                strategies_config = json.loads(os.environ["BEHEMOTH_STRATEGIES"])
+                strategies = []
+                for config in strategies_config:
+                    if config.get("type") == "prefix":
+                        strategies.append(PrefixStrategy(config["value"]))
+                    elif config.get("type") == "exact":
+                        strategies.append(ExactMatchStrategy(config["value"], config.get("expected_args", [])))
+            except Exception as e:
+                logger.error(f"Failed to parse BEHEMOTH_STRATEGIES: {e}")
+
+        self.manager = PluginManager(strategies=strategies)
         self.plugins_dir = plugins_dir
         self.actions_manifest = {}
 
@@ -29,7 +44,8 @@ class PluginWorkerRPC:
                     name: {
                         "name": action.name,
                         "signature": action.signature_info,
-                        "is_keyword": action.is_keyword
+                        "is_keyword": action.is_keyword,
+                        "strategy_metadata": action.strategy_metadata
                     }
                     for name, action in actions.items()
                 }

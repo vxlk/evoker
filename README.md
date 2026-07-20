@@ -7,27 +7,59 @@
 ## Core Features
 *   **Multi-Headed Isolation**: Plugins run in their own dedicated Python environments (via XML-RPC). If a plugin crashes, your Host Application stays alive.
 *   **Zero-Copy PyArrow IPC**: Share colossal DataFrames and Tensors across the process boundary instantly. Behemoth serializes to memory-mapped OS files, meaning gigabytes of data never touch Python's memory buffer until read.
-*   **Auto-Installing Dependencies**: Drop a `requirements.txt` or an offline `wheels/` folder into a plugin, and Behemoth handles the `pip install` transparently upon loading.
+*   **Auto-Installing Dependencies**: Drop a `requirements.txt` or an offline `wheels/` folder into a plugin, and Behemoth handles the `pip install` transparently upon loading into an isolated virtual environment.
 *   **Deep Introspection**: The `PluginManager` dynamically reads type hints and signature defaults, ensuring your Host knows exactly how to invoke the plugin.
 
 ---
 
-## Example Host Integration: AI Data Orchestrator
+## Installation
 
-To demonstrate Behemoth's infinite scalability, imagine an AI Data Orchestrator host. This host coordinates a pipeline of massive datasets, moving them through various stages of analysis. Here are examples of plugins that easily snap into the Behemoth architecture:
+Behemoth downloads and bundles a standalone Python interpreter during its installation phase. This ensures that plugins can run in fully isolated environments without relying on the end-user's system Python.
 
-### 1. `data_ingestor_plugin`
-*   **Role**: Reads terabytes of unstructured CSV/Parquet files from cloud storage and converts them into PyArrow Tables.
-*   **Behemoth Advantage**: The massive PyArrow Tables are written to a memory-mapped file, and only the lightweight *file handle* is passed back to the Host via XML-RPC.
+To install Behemoth:
 
-### 2. `nlp_analyzer_plugin`
-*   **Role**: Receives the memory-mapped PyArrow data and runs local HuggingFace sentiment analysis across millions of rows.
-*   **Behemoth Advantage**: Ships with an offline `wheels/` folder containing the massive PyTorch/Transformers dependencies. Behemoth auto-installs them without requiring an internet connection or polluting the Host's environment.
+```bash
+pip install .
+```
 
-### 3. `vision_processor_plugin`
-*   **Role**: A highly experimental, unstable plugin that processes image batches using a bleeding-edge C++ wrapper.
-*   **Behemoth Advantage**: If a segmentation fault occurs in the C++ library, only the isolated `PluginWorkerRPC` process dies. The Host seamlessly catches the exception over XML-RPC, logs the error, and spins up a fresh worker without downtime.
+> [!WARNING]
+> **Pip Caching Behavior**
+> `pip` aggressively caches built wheels. If you change the `PYTHON_VERSION` in `setup.py`, running `pip install .` again might simply install the cached wheel without re-running the python downloader script. 
+> 
+> To force a clean build and ensure the latest python version is downloaded, use:
+> ```bash
+> pip install . --no-cache-dir
+> ```
 
-### 4. `telemetry_exporter_plugin`
-*   **Role**: Aggregates the analyzed data and pushes metrics to a Grafana/Prometheus dashboard.
-*   **Behemoth Advantage**: Utilizes a highly-specific API client that has conflicting version requirements with the `nlp_analyzer`. Behemoth's process isolation means "Dependency Hell" is entirely bypassed.
+## Usage
+
+See the [examples/](file:///c:/Users/small/Desktop/projects/Behemoth/examples/README.md) directory for a complete "Hello World" demonstration of how to boot a `PluginClient`, declare custom matching strategies, and pass PyArrow memory-mapped data across the process boundary.
+
+## Documentation
+
+Behemoth's documentation is powered by [Docusaurus](https://docusaurus.io/). 
+
+To run the documentation site locally:
+1. Ensure you have Node.js (>= 18.0) installed.
+2. Navigate to the `doc` directory:
+   ```bash
+   cd doc
+   ```
+3. Install dependencies and start the development server:
+   ```bash
+   npm install
+   npm start
+   ```
+
+The local documentation server will automatically open in your browser at `http://localhost:3000`.
+
+## Development
+
+Behemoth includes a `dev.py` utility script for streamlining local development tasks.
+
+* `python dev.py install`: Creates a `.venv` (if missing), activates it, and installs development dependencies via `pip install -e .[dev]`.
+* `python dev.py build`: Builds the standard PyInstaller example.
+* `python dev.py docs`: Builds the static Docusaurus site in the `doc/` directory.
+* `python dev.py test`: Activates the virtual environment and runs the test suite using `pytest`.
+* `python dev.py run-example`: Activates the virtual environment and runs the `examples/host.py` script.
+* `python dev.py build-release`: Bundles all plugin dependencies dynamically and builds the PyInstaller release bundle via `host.spec`.

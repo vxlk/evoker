@@ -1,5 +1,0 @@
-{
-    "name": "telemetry_exporter_plugin",
-    "version": "1.0.0",
-    "description": "Exports pipeline telemetry to a Grafana dashboard."
-}

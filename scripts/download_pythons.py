@@ -33,10 +33,10 @@ def get_target_triple() -> str:
     raise ValueError(f"Unsupported platform: {system} {machine}")
 
 def get_pythons_dir() -> Path:
-    """Return the common location for python environments in the project root."""
-    # Assuming this file is at src/plugin_host/downloader.py
-    # Project root is three levels up
-    return Path(__file__).parent.parent.parent / "pythons"
+    """Return the common location for python environments inside the package."""
+    # This script is at scripts/download_pythons.py
+    # We want to install pythons into src/plugin_host/pythons so it gets bundled by setup.py
+    return Path(__file__).parent.parent / "src" / "plugin_host" / "pythons"
 
 def extract_zst(archive_path: Path, dest_dir: Path):
     if zstd is None:
@@ -144,3 +144,11 @@ def download_and_extract_python(version: str) -> Path:
         raise RuntimeError(f"Extraction completed but {exe_path} not found.")
         
     return exe_path
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    if len(sys.argv) > 1:
+        download_and_extract_python(sys.argv[1])
+    else:
+        print("Usage: python download_pythons.py <version>")
+        sys.exit(1)

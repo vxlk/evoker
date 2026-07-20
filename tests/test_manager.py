@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 import pytest
-from plugin_host.manager import PluginManager
+from plugin_host.manager import PluginManager, PrefixStrategy
 
 def create_plugin(base_dir, name, manifest_content=None, init_content=None):
     plugin_dir = base_dir / name
@@ -93,3 +93,34 @@ def untyped_action(some_arg):
     assert "untyped_action" in actions
     assert "lacks type hint. Defaulting to str." in caplog.text
     assert actions["untyped_action"].signature_info["parameters"]["some_arg"]["type"] == "str"
+
+def test_prefix_strategy_matching(temp_plugins_dir):
+    manager = PluginManager(strategies=[PrefixStrategy("context_menu_action_")])
+    init_content = """
+def context_menu_action_hello(text: str):
+    pass
+    
+def context_menu_action_world():
+    pass
+    
+def normal_action():
+    pass
+"""
+    plugin_dir = create_plugin(temp_plugins_dir, "strategy_plugin", manifest_content='{"name": "test"}', init_content=init_content)
+    actions = manager.load_plugin(plugin_dir)
+    
+    assert actions is not None
+    assert "context_menu_action_hello" in actions
+    hello_action = actions["context_menu_action_hello"]
+    assert hello_action.is_keyword is True
+    assert hello_action.strategy_metadata["menu_name"] == "hello"
+    
+    assert "context_menu_action_world" in actions
+    world_action = actions["context_menu_action_world"]
+    assert world_action.is_keyword is True
+    assert world_action.strategy_metadata["menu_name"] == "world"
+    
+    assert "normal_action" in actions
+    normal = actions["normal_action"]
+    assert normal.is_keyword is False
+    assert normal.strategy_metadata is None

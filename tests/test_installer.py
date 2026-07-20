@@ -50,9 +50,10 @@ def test_offline_install_attempt(temp_plugins_dir, monkeypatch):
     
     assert install_plugin_deps(plugin_dir) is True
     
-    assert len(cmd_called) == 1
-    assert "--no-index" in cmd_called[0]
-    assert "--find-links" in cmd_called[0]
+    assert len(cmd_called) > 0
+    pip_cmd = cmd_called[-1]
+    assert "--no-index" in pip_cmd
+    assert "--find-links" in pip_cmd
 
 def test_manager_skips_on_install_failure(temp_plugins_dir, caplog):
     manager = PluginManager()
