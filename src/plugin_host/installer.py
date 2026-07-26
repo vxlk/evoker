@@ -4,6 +4,8 @@ import sys
 import os
 from pathlib import Path
 
+CORE_DEPS = ["pyarrow"]
+
 logger = logging.getLogger(__name__)
 
 class DependencyInstallError(Exception):
@@ -56,13 +58,13 @@ def install_plugin_deps(plugin_path: Path) -> bool:
         pip_python_exe = venv_dir / "bin" / "python"
         
     wheels_dir = plugin_path / "wheels"
-    cmd = [str(pip_python_exe), "-m", "pip", "install", "-r", str(req_file)]
+    cmd = [str(pip_python_exe), "-m", "pip", "install", *CORE_DEPS, "-r", str(req_file)]
     
     # Auto-build wheels if they are missing
     if not wheels_dir.exists() or not any(wheels_dir.iterdir()):
         logger.info(f"Wheels for plugin {plugin_path.name} do not exist. Building them now...")
         wheels_dir.mkdir(exist_ok=True)
-        build_cmd = [str(pip_python_exe), "-m", "pip", "wheel", "-r", str(req_file), "-w", str(wheels_dir)]
+        build_cmd = [str(pip_python_exe), "-m", "pip", "wheel", *CORE_DEPS, "-r", str(req_file), "-w", str(wheels_dir)]
         try:
             result = subprocess.run(build_cmd, check=True, capture_output=True, text=True)
             logger.debug(f"Pip wheel output for {plugin_path.name}: {result.stdout}")
@@ -72,8 +74,8 @@ def install_plugin_deps(plugin_path: Path) -> bool:
             raise DependencyInstallError(error_msg)
     
     if wheels_dir.exists() and any(wheels_dir.iterdir()):
-        logger.info(f"Plugin {plugin_path.name} contains offline wheels. Using offline installation.")
-        cmd.extend(["--no-index", "--find-links", str(wheels_dir)])
+        logger.info(f"Plugin {plugin_path.name} contains offline wheels. Preferring local wheels.")
+        cmd.extend(["--find-links", str(wheels_dir)])
         
     logger.info(f"Installing dependencies for plugin {plugin_path.name}...")
     
