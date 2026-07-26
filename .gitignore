@@ -34,3 +34,6 @@ test_venv/
 # Docusaurus
 .docusaurus/
 node_modules/
+
+src/plugin_host/docs_html/*
+*.egg-info/
