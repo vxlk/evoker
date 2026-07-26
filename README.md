@@ -33,7 +33,11 @@ pip install .
 
 ## Usage
 
-See the [examples/](file:///c:/Users/small/Desktop/projects/Behemoth/examples/README.md) directory for a complete "Hello World" demonstration of how to boot a `PluginClient`, declare custom matching strategies, and pass PyArrow memory-mapped data across the process boundary.
+For a comprehensive, full-system overview of how to build a Behemoth application, intercept data streams with PyArrow, and package the entire architecture into a standalone PyInstaller binary, check out our official example repository:
+
+👉 **[Behemoth Example Host Repository](https://github.com/vxlk/behemoth-example)**
+
+You can also see the local [examples/](file:///c:/Users/small/Desktop/projects/Behemoth/examples/README.md) directory for a simpler "Hello World" demonstration of how to boot a `PluginClient`.
 
 ## Documentation
 
