@@ -37,3 +37,4 @@ node_modules/
 
 src/plugin_host/docs_html/*
 *.egg-info/
+node_modules/
