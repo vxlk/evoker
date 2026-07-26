@@ -31,3 +31,6 @@ wheels/
 build/
 dist/
 test_venv/  
+# Docusaurus
+.docusaurus/
+node_modules/

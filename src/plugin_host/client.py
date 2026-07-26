@@ -28,18 +28,19 @@ class PluginClient:
                 if var != "PATH":
                     del env[var]
                 
-        # In PyInstaller, we extract physical files to sys._MEIPASS/src/plugin_host
-        # to avoid PYTHONPATH polluting the standalone python with PyInstaller .pyd files.
         is_frozen = getattr(sys, "frozen", False)
         if is_frozen:
             base_dir = Path(sys._MEIPASS)
-            plugin_host_dir = base_dir / "src" / "plugin_host"
-            env["PYTHONPATH"] = str(base_dir / "src")
+            # Add the extracted raw source code directory to PYTHONPATH
+            # so external venv Python interpreters can import plugin_host!
+            plugin_host_src = base_dir / "plugin_host_src"
+            env["PYTHONPATH"] = str(plugin_host_src)
+            worker_script = plugin_host_src / "plugin_host" / "worker.py"
         else:
             plugin_host_dir = Path(__file__).parent
             env["PYTHONPATH"] = str(plugin_host_dir.parent)
-            
-        worker_script = plugin_host_dir / "worker.py"
+            worker_script = plugin_host_dir / "worker.py"
+
         
         if self.strategies is not None:
             env["BEHEMOTH_STRATEGIES"] = json.dumps(self.strategies)
@@ -78,8 +79,17 @@ class PluginClient:
 
         # Start the worker subprocess
 
+        if getattr(sys, "frozen", False) and python_exe == Path(sys.executable):
+            # In a frozen bundle (PyInstaller), if we are using the bundled host.exe as the interpreter
+            # We must pass this flag so our runtime hook intercepts it and launches the worker script
+            # instead of running the main host app again (which would cause an infinite hang).
+            cmd = [str(python_exe), "--behemoth-worker", str(worker_script), str(self.plugins_dir)]
+        else:
+            # When using an external Python interpreter (.venv), it natively supports running modules
+            cmd = [str(python_exe), "-u", "-m", "plugin_host.worker", str(self.plugins_dir)]
+
         self.worker_process = subprocess.Popen(
-            [str(python_exe), "-u", str(worker_script), str(self.plugins_dir)],
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

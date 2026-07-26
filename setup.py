@@ -22,6 +22,23 @@ class CustomBuildPy(build_py):
         script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts", "download_pythons.py")
         subprocess.run([sys.executable, script_path, PYTHON_VERSION], check=True)
         
+        # Build docs
+        print("Building documentation...")
+        docs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "doc")
+        if os.path.exists(docs_dir):
+            # Using shell=True for Windows npm command resolution
+            subprocess.run(["npm", "install"], cwd=docs_dir, shell=True, check=True)
+            subprocess.run(["npm", "run", "build"], cwd=docs_dir, shell=True, check=True)
+            
+            # Copy built docs to src/plugin_host/docs_html
+            import shutil
+            docs_build_dir = os.path.join(docs_dir, "build")
+            docs_html_dest = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "plugin_host", "docs_html")
+            if os.path.exists(docs_build_dir):
+                if os.path.exists(docs_html_dest):
+                    shutil.rmtree(docs_html_dest)
+                shutil.copytree(docs_build_dir, docs_html_dest)
+        
         # Continue with standard build
         build_py.run(self)
 
@@ -56,7 +73,7 @@ setup(
     },
     include_package_data=True,
     package_data={
-        # Ensure the downloaded pythons are bundled with the package
-        '': ['pythons/**/*'],
+        # Ensure the downloaded pythons and built docs are bundled with the package
+        '': ['pythons/**/*', 'docs_html/**/*'],
     }
 )

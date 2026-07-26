@@ -63,3 +63,23 @@ Behemoth includes a `dev.py` utility script for streamlining local development t
 * `python dev.py test`: Activates the virtual environment and runs the test suite using `pytest`.
 * `python dev.py run-example`: Activates the virtual environment and runs the `examples/host.py` script.
 * `python dev.py build-release`: Bundles all plugin dependencies dynamically and builds the PyInstaller release bundle via `host.spec`.
+
+## PyInstaller Packaging
+
+Behemoth is natively designed to be compiled into a standalone binary using PyInstaller. 
+When distributing your host application via a `One-Dir` build (e.g., `dist/host/`), PyInstaller will automatically place its bundled modules inside an `_internal` directory to keep the root directory clean.
+
+Because plugins are designed to be user-facing, you should **not** bundle your default `plugins` or `tools` directories within PyInstaller's `datas` array, as this would hide them inside the `_internal` folder. Instead, the `host.py` script expects these folders to be placed directly alongside the `.exe` at the root of the distribution directory.
+
+**Best Practice for Distribution:**
+After running your PyInstaller compilation, implement a post-build step in your build scripts to copy your default plugins alongside the executable.
+An example PowerShell build script `build.ps1` is provided in the root of this repository:
+```powershell
+# 1. Build the executable
+.\venv\Scripts\python.exe -m PyInstaller build.spec -y
+
+# 2. Deploy user-facing plugin folders alongside the binary
+Copy-Item -Recurse -Force "plugins" "dist\host\plugins"
+Copy-Item -Recurse -Force "tools" "dist\host\tools"
+```
+This ensures end-users can seamlessly add their own `.venv` or `.zip` plugins right next to your binary without navigating through Pyinstaller's internal DLL structure!
