@@ -1,5 +1,0 @@
-[console_scripts]
-behemoth-cli = plugin_host.cli:main
-
-[pyinstaller40]
-hook-dirs = plugin_host._pyinstaller:get_hook_dirs
