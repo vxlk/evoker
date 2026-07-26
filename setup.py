@@ -33,6 +33,14 @@ setup(
     install_requires=[
         'pyarrow>=12.0.0',
     ],
+    entry_points={
+        'console_scripts': [
+            'behemoth-cli=plugin_host.cli:main',
+        ],
+        'pyinstaller40': [
+            'hook-dirs = plugin_host._pyinstaller:get_hook_dirs',
+        ]
+    },
     extras_require={
         'dev': [
             'pytest>=7.4.0',
