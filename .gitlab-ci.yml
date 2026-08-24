@@ -1,0 +1,15 @@
+image: node:20
+
+pages:
+  stage: deploy
+  script:
+    - cd doc
+    - npm ci
+    - npm run build
+    - mv build ../public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - changes:
+        - doc/**/*
