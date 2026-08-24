@@ -1,44 +1,34 @@
 // @ts-check
-// `@type` JSDoc annotations allow editor autocompletion and type checking
-// (when paired with `@ts-check`).
-// There are various equivalent ways to declare your Docusaurus config.
-// See: https://docusaurus.io/docs/api/docusaurus-config
-
 import {themes as prismThemes} from 'prism-react-renderer';
-
-// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'Behemoth',
+  tagline: 'A high-performance, process-isolated plugin host for Python',
   favicon: 'img/favicon.ico',
 
-  // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
-    v4: true, // Improve compatibility with the upcoming Docusaurus v4
+    v4: true,
   },
 
-  // Set the production url of your site here
-  url: 'https://your-docusaurus-site.example.com',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  url: 'https://vxlk.github.io',
+  baseUrl: '/Behemoth/',
 
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'vxlk',
+  projectName: 'Behemoth',
+  trailingSlash: false,
 
   onBrokenLinks: 'throw',
 
-  // Even if you don't use internationalization, you can use this field to set
-  // useful metadata like html lang. For example, if your site is Chinese, you
-  // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
   },
+
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
 
   presets: [
     [
@@ -47,10 +37,7 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/vxlk/Behemoth/tree/master/doc/',
         },
         blog: false,
         theme: {
@@ -63,26 +50,21 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
       colorMode: {
+        defaultMode: 'dark',
         respectPrefersColorScheme: true,
       },
       navbar: {
-        title: 'My Site',
-        logo: {
-          alt: 'My Site Logo',
-          src: 'img/logo.svg',
-        },
+        title: 'Behemoth',
         items: [
           {
             type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
+            sidebarId: 'docsSidebar',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Docs',
           },
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/vxlk/Behemoth',
             label: 'GitHub',
             position: 'right',
           },
@@ -92,28 +74,19 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Docs',
+            title: 'Documentation',
             items: [
               {
-                label: 'Tutorial',
+                label: 'Getting Started',
                 to: '/docs/intro',
               },
-            ],
-          },
-          {
-            title: 'Community',
-            items: [
               {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+                label: 'Architecture',
+                to: '/docs/architecture/overview',
               },
               {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
-              {
-                label: 'X',
-                href: 'https://x.com/docusaurus',
+                label: 'API Reference',
+                to: '/docs/api/plugin-client',
               },
             ],
           },
@@ -122,16 +95,24 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/vxlk/Behemoth',
+              },
+              {
+                label: 'Example Project',
+                href: 'https://github.com/vxlk/behemoth-example',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Behemoth. Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
+        additionalLanguages: ['powershell', 'ini', 'json'],
+      },
+      mermaid: {
+        theme: {light: 'neutral', dark: 'dark'},
       },
     }),
 };
