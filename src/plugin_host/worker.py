@@ -8,6 +8,15 @@ from plugin_host.manager import PluginManager, PrefixStrategy, ExactMatchStrateg
 
 logger = logging.getLogger(__name__)
 
+if "BEHEMOTH_INJECTED_PACKAGES" in os.environ:
+    try:
+        injected = json.loads(os.environ["BEHEMOTH_INJECTED_PACKAGES"])
+        for p in reversed(injected):
+            if p not in sys.path:
+                sys.path.insert(0, p)
+    except Exception as e:
+        logger.error(f"Failed to parse BEHEMOTH_INJECTED_PACKAGES: {e}")
+
 class PluginWorkerRPC:
     def __init__(self, plugins_dir: Path):
         strategies = None

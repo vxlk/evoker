@@ -7,9 +7,10 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 
 class PluginClient:
-    def __init__(self, plugins_dir: Path, strategies: Optional[List[Dict[str, Any]]] = None):
+    def __init__(self, plugins_dir: Path, strategies: Optional[List[Dict[str, Any]]] = None, injected_packages: Optional[List[Path]] = None):
         self.plugins_dir = plugins_dir
         self.strategies = strategies
+        self.injected_packages = injected_packages
         self.worker_process = None
         self.proxy = None
         
@@ -35,15 +36,18 @@ class PluginClient:
             # so external venv Python interpreters can import plugin_host!
             plugin_host_src = base_dir / "plugin_host_src"
             env["PYTHONPATH"] = str(plugin_host_src)
-            worker_script = plugin_host_src / "plugin_host" / "worker.py"
+            plugin_host_dir = plugin_host_src / "plugin_host"
+            worker_script = plugin_host_dir / "worker.py"
         else:
             plugin_host_dir = Path(__file__).parent
             env["PYTHONPATH"] = str(plugin_host_dir.parent)
             worker_script = plugin_host_dir / "worker.py"
 
-        
         if self.strategies is not None:
             env["BEHEMOTH_STRATEGIES"] = json.dumps(self.strategies)
+            
+        if self.injected_packages is not None:
+            env["BEHEMOTH_INJECTED_PACKAGES"] = json.dumps([str(p.resolve()) for p in self.injected_packages])
         
         # Determine which python executable to use.
         # Check if any plugin in plugins_dir has a .venv we can use, 
