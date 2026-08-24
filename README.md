@@ -41,7 +41,7 @@ You can also see the local [examples/](file:///c:/Users/small/Desktop/projects/B
 
 ## Documentation
 
-Behemoth's documentation is powered by [Docusaurus](https://docusaurus.io/). 
+📖 **[Read the full documentation →](https://vxlk.github.io/Behemoth/)**
 
 To run the documentation site locally:
 1. Ensure you have Node.js (>= 18.0) installed.
@@ -54,8 +54,6 @@ To run the documentation site locally:
    npm install
    npm start
    ```
-
-The local documentation server will automatically open in your browser at `http://localhost:3000`.
 
 ## Development
 
