@@ -6,7 +6,6 @@
 
 ## Core Features
 *   **Multi-Headed Isolation**: Plugins run in their own dedicated Python environments (via XML-RPC). If a plugin crashes, your Host Application stays alive.
-*   **Zero-Copy PyArrow IPC**: Share colossal DataFrames and Tensors across the process boundary instantly. Behemoth serializes to memory-mapped OS files, meaning gigabytes of data never touch Python's memory buffer until read.
 *   **Auto-Installing Dependencies**: Drop a `requirements.txt` or an offline `wheels/` folder into a plugin, and Behemoth handles the `pip install` transparently upon loading into an isolated virtual environment.
 *   **Deep Introspection**: The `PluginManager` dynamically reads type hints and signature defaults, ensuring your Host knows exactly how to invoke the plugin.
 

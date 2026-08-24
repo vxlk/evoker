@@ -12,20 +12,20 @@ def test_pyinstaller_build_and_run(tmp_path):
        and automatically build wheels for the hello_world plugin.
     3. The host can communicate with the worker via XML-RPC and Arrow IPC.
     """
-    # 1. Run the build (using python dev.py build-release)
-    print("Building PyInstaller release bundle...")
-    build_result = subprocess.run(["python", "dev.py", "build-release"], capture_output=True, text=True)
-    assert build_result.returncode == 0, f"Build failed:\n{build_result.stdout}\n{build_result.stderr}"
-    
-    # 2. Verify the executable exists
-    exe_path = Path("dist/host.exe")
-    assert exe_path.exists(), "host.exe was not created in dist/"
-    
-    # 3. Clean any existing wheels in the examples to ensure it auto-builds them
+    # 1. Clean any existing wheels in the examples to ensure it auto-builds them
     wheels_dir = Path("examples/plugins/hello_world_plugin/wheels")
     if wheels_dir.exists():
         import shutil
         shutil.rmtree(wheels_dir)
+
+    # 2. Run the build (using python dev.py build-release)
+    print("Building PyInstaller release bundle...")
+    build_result = subprocess.run(["python", "dev.py", "build-release"], capture_output=True, text=True)
+    assert build_result.returncode == 0, f"Build failed:\n{build_result.stdout}\n{build_result.stderr}"
+    
+    # 3. Verify the executable exists
+    exe_path = Path("dist/host.exe")
+    assert exe_path.exists(), "host.exe was not created in dist/"
         
     # 4. Run the executable and verify it works
     print("Running compiled host.exe...")
