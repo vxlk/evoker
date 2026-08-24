@@ -3,6 +3,7 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
+import CodeBlock from '@theme/CodeBlock';
 import styles from './index.module.css';
 
 function HeroSection() {
@@ -129,25 +130,24 @@ function HowItWorksSection() {
             <div className={styles.stepNumber}>1</div>
             <div className={styles.stepContent}>
               <Heading as="h3">Write a plugin</Heading>
-              <pre className={styles.codeBlock}>
-{`# plugins/hello/__init__.py
-def greet(name: str) -> str:
+              <CodeBlock language="python" title="plugins/hello/__init__.py">
+{`def greet(name: str) -> str:
     return f"Hello, {name}!"`}
-              </pre>
+              </CodeBlock>
             </div>
           </div>
           <div className={styles.step}>
             <div className={styles.stepNumber}>2</div>
             <div className={styles.stepContent}>
               <Heading as="h3">Call it from your app</Heading>
-              <pre className={styles.codeBlock}>
+              <CodeBlock language="python" title="host.py">
 {`from plugin_host.client import PluginClient
 
 client = PluginClient(Path("plugins"))
 client.start_worker()
 result = client.run_action("hello", "greet",
                            {"name": "World"})`}
-              </pre>
+              </CodeBlock>
             </div>
           </div>
           <div className={styles.step}>
