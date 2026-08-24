@@ -48,7 +48,6 @@ setup(
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     install_requires=[
-        'pyarrow>=12.0.0',
     ],
     entry_points={
         'console_scripts': [
@@ -60,6 +59,7 @@ setup(
     },
     extras_require={
         'dev': [
+            'pyarrow>=12.0.0',
             'pytest>=7.4.0',
             'hypothesis>=6.82.0',
             'pytest-xprocess>=0.22.0',

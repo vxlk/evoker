@@ -1,6 +1,20 @@
 # Behemoth
 
-![Behemoth Mascot](assets/mascot.jpg)
+<p align="center">
+  <img src="assets/mascot.jpg" width="250" alt="Behemoth Mascot">
+</p>
+
+<p align="center">
+  <a href="https://github.com/vxlk/behemoth/actions"><img src="https://img.shields.io/github/actions/workflow/status/vxlk/behemoth/ci.yml?branch=main" alt="Build Status"></a>
+  <a href="https://pypi.org/project/behemoth-plugin-host/"><img src="https://img.shields.io/pypi/v/behemoth-plugin-host" alt="PyPI Version"></a>
+  <a href="https://vxlk.github.io/Behemoth/"><img src="https://img.shields.io/badge/docs-latest-blue.svg" alt="Documentation"></a>
+  <a href="https://github.com/vxlk/behemoth/blob/main/LICENSE"><img src="https://img.shields.io/github/license/vxlk/behemoth" alt="License"></a>
+  <a href="https://codecov.io/gh/vxlk/behemoth"><img src="https://img.shields.io/codecov/c/github/vxlk/behemoth" alt="Codecov"></a>
+</p>
+
+<p align="center">
+  📖 <b><a href="https://vxlk.github.io/Behemoth/">Read the full documentation here</a></b>
+</p>
 
 **Behemoth** is a dead-simple, process-isolated plugin system for Python desktop applications. Ship your app with fully decoupled plugins that run in isolated subprocesses — users extend your application by dropping a folder in. No internet required, no install wizards, no shared state bugs.
 
@@ -40,8 +54,6 @@ For a comprehensive, full-system overview of how to build a Behemoth application
 You can also see the local [examples/](file:///c:/Users/small/Desktop/projects/Behemoth/examples/README.md) directory for a simpler "Hello World" demonstration of how to boot a `PluginClient`.
 
 ## Documentation
-
-📖 **[Read the full documentation →](https://vxlk.github.io/Behemoth/)**
 
 To run the documentation site locally:
 1. Ensure you have Node.js (>= 18.0) installed.
