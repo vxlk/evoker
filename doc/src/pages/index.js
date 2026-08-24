@@ -79,9 +79,9 @@ const features = [
     description: 'Pass your own modules and libraries into plugin processes. Plugins import your host SDK as if it were a regular package — no duplication, no version conflicts.',
   },
   {
-    emoji: '⚡',
-    title: 'Zero-Copy Data',
-    description: 'Transfer massive datasets between host and plugins via memory-mapped PyArrow files. Only a tiny filepath string crosses the wire.',
+    emoji: '🔍',
+    title: 'Deep Introspection',
+    description: 'Plugin functions are inspected at load time — parameter names, types, defaults, and required flags are extracted automatically. Your host always knows exactly what a plugin expects.',
   },
   {
     emoji: '📦',

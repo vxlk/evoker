@@ -138,29 +138,17 @@ Functions can directly return standard primitive and nested data types supported
 - Lists / Arrays (`list`)
 - `None` (supported with `allow_none=True`)
 
-### Large Datasets and PyArrow IPC
+### Large Datasets and Custom IPC
 
-Because XML-RPC serializes payloads as ASCII XML text, transferring multi-megabyte or gigabyte datasets directly through return values incurs severe CPU and memory penalties.
+Because XML-RPC serializes payloads as ASCII XML text, transferring very large datasets directly through return values may incur serialization overhead.
 
-For high-throughput or big data workflows, plugins should write tabular data to a temporary memory-mapped file and return the **file path string** instead. The host then reads the table with zero memory copying via PyArrow IPC:
-
-```python
-import pyarrow as pa
-from host_api.arrow_ipc import write_table_to_mmap
-
-def compute_large_dataset() -> str:
-    table = pa.Table.from_pydict({"values": range(1_000_000)})
-    mmap_path = write_table_to_mmap(table)
-    return mmap_path  # Returns string path over XML-RPC
-```
-
-For complete details, see the [Zero-Copy PyArrow IPC Guide](./zero-copy-ipc.md).
+For high-throughput or large data workflows, host applications can implement their own custom IPC mechanisms (such as shared memory, binary files, or local sockets) and inject helper utilities into plugin worker processes via [Custom API Injection](./api-injection.md).
 
 ---
 
 ## Complete Plugin Example
 
-Below is a complete, production-ready plugin demonstrating typed arguments, default values, private helpers, lifecycle hooks, and IPC return values.
+Below is a complete, production-ready plugin demonstrating typed arguments, default values, private helpers, lifecycle hooks, and structured return values.
 
 ### Directory Layout
 
@@ -186,8 +174,6 @@ plugins/
 ```python
 import re
 from typing import Dict, List, Any
-import pyarrow as pa
-from host_api.arrow_ipc import write_table_to_mmap
 
 # ---------------------------------------------------------------------------
 # Private Helper Functions (Ignored by Behemoth discovery)
@@ -246,28 +232,17 @@ def count_words(text: str, case_sensitive: bool = False) -> Dict[str, Any]:
     }
 
 
-def export_word_table(text: str, min_frequency: int = 1) -> str:
+def filter_top_words(text: str, min_frequency: int = 2) -> Dict[str, int]:
     """
-    Generates a PyArrow record batch of word frequencies and returns
-    a memory-mapped file handle for zero-copy host retrieval.
+    Filters words exceeding the given minimum frequency threshold.
     
     :param text: Input text content.
     :param min_frequency: Minimum threshold for inclusion.
-    :return: Filepath to the memory-mapped Arrow IPC file.
+    :return: Dictionary of words matching the threshold.
     """
     tokens = _tokenize(text)
     freqs = _calculate_frequencies(tokens)
-    
-    words = [w for w, c in freqs.items() if c >= min_frequency]
-    counts = [c for w, c in freqs.items() if c >= min_frequency]
-    
-    table = pa.Table.from_arrays(
-        [pa.array(words), pa.array(counts)],
-        names=["word", "count"]
-    )
-    
-    # Write to temp mmap and return filepath string over XML-RPC
-    return write_table_to_mmap(table)
+    return {w: c for w, c in freqs.items() if c >= min_frequency}
 ```
 
 ---
@@ -279,16 +254,14 @@ Here is how the host application discovers and invokes the `text_analyzer` plugi
 ```python
 from pathlib import Path
 from plugin_host.client import PluginClient
-from host_api.arrow_ipc import read_table_from_mmap, cleanup_mmap
 
-# 1. Initialize client pointing to plugins and host_api
+# 1. Initialize client pointing to plugins
 client = PluginClient(
     plugins_dir=Path("plugins"),
     strategies=[
         {"type": "exact", "value": "on_start", "args": ["app_context"]},
         {"type": "prefix", "value": "context_menu_"}
-    ],
-    injected_packages=[Path("host_api").parent]
+    ]
 )
 
 client.start_worker()
@@ -297,7 +270,7 @@ try:
     # 2. Inspect discovered signatures
     plugins = client.get_plugins()
     print("Discovered actions:", list(plugins["text_analyzer"].keys()))
-    # Output: ['on_start', 'context_menu_summarize_selection', 'count_words', 'export_word_table']
+    # Output: ['on_start', 'context_menu_summarize_selection', 'count_words', 'filter_top_words']
 
     # 3. Invoke standard action
     sample_text = "Behemoth plugin system. Fast, isolated, and scalable plugin system."
@@ -308,15 +281,13 @@ try:
     )
     print("Word Count Stats:", stats)
 
-    # 4. Invoke PyArrow IPC action
-    mmap_path = client.run_action(
+    # 4. Invoke filtered words action
+    top_words = client.run_action(
         "text_analyzer", 
-        "export_word_table", 
+        "filter_top_words", 
         {"text": sample_text, "min_frequency": 2}
     )
-    table = read_table_from_mmap(mmap_path)
-    print("Filtered Table:\n", table.to_pandas())
-    cleanup_mmap(mmap_path)
+    print("Top Words:", top_words)
 
 finally:
     client.stop_worker()

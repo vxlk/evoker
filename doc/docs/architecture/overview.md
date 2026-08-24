@@ -8,7 +8,7 @@ sidebar_label: Overview
 
 Behemoth is a high-performance, process-isolated plugin framework designed for Python applications that require dynamic extensibility, crash resilience, and cross-interpreter dependency isolation.
 
-This document outlines Behemoth's architectural pillars: the multi-process isolation model, the dual control/data plane communication architecture, multi-tier interpreter discovery, and the multi-layered sys.path injection pipeline.
+This document outlines Behemoth's architectural pillars: the multi-process isolation model, the XML-RPC communication architecture, multi-tier interpreter discovery, and the multi-layered sys.path injection pipeline.
 
 ---
 
@@ -60,20 +60,18 @@ graph TB
 
 ---
 
-## Control Plane vs Data Plane
+## Communication Architecture (XML-RPC)
 
-Behemoth separates inter-process communication into two distinct pathways: a lightweight **Control Plane** and a high-throughput **Data Plane**.
+Behemoth uses XML-RPC over loopback TCP for communication between the host application and worker subprocesses.
 
 ```mermaid
 flowchart LR
     subgraph Host["Host Application"]
-        H_Ctrl["Host Control Logic"]
-        H_Mem["pyarrow.memory_map"]
+        H_Ctrl["Host Application / PluginClient"]
     end
 
-    subgraph Transport["Communication Channels"]
-        XMLRPC["Control Plane: XML-RPC (Localhost TCP)"]
-        MMAP["Data Plane: Shared Memory / IPC (.arrow temp file)"]
+    subgraph Transport["Communication Channel"]
+        XMLRPC["XML-RPC (Localhost TCP)"]
     end
 
     subgraph Worker["Plugin Worker Process"]
@@ -84,16 +82,14 @@ flowchart LR
     H_Ctrl -->|invoke(action, kwargs)| XMLRPC
     XMLRPC -->|Dispatch| W_RPC
     W_RPC --> W_Plug
-
-    W_Plug -.->|Write Table| MMAP
-    MMAP -.->|Zero-Copy Read| H_Mem
-    W_Plug -->|Return mmap_path string| XMLRPC
-    XMLRPC -->|Return file path| H_Ctrl
+    W_Plug -->|Return serializable result| W_RPC
+    W_RPC -->|Return response| XMLRPC
+    XMLRPC -->|Return result| H_Ctrl
 ```
 
-### 1. Control Plane (XML-RPC)
+### Wire Protocol
 
-The Control Plane manages orchestration, discovery, and metadata exchange. It uses standard library `xmlrpc.client` and `xmlrpc.server.SimpleXMLRPCServer`.
+The communication layer manages orchestration, discovery, and invocation using Python's standard library `xmlrpc.client` and `xmlrpc.server.SimpleXMLRPCServer`.
 
 - **Payload Characteristics**: Strictly lightweight primitives (strings, integers, floats, booleans, lists, and dicts).
 - **Core Operations**:
@@ -101,45 +97,18 @@ The Control Plane manages orchestration, discovery, and metadata exchange. It us
   - `invoke(plugin_name, action_name, kwargs)`: Executes a target function on a plugin with keyword arguments and returns the result.
 
 ```python
-# Host Invocation via Control Plane
+# Host Invocation via PluginClient
 client = PluginClient(plugins_dir=Path("./plugins"))
 client.start_worker()
 
 # 1. Scan for available plugins
 manifest = client.get_plugins()
 
-# 2. Invoke a plugin action with primitive arguments
+# 2. Invoke a plugin action with keyword arguments
 result = client.run_action("hello_world_plugin", "greet", {"name": "Alice"})
 ```
 
-### 2. Data Plane (PyArrow Memory-Mapped IPC)
-
-Sending large datasets (such as multi-megabyte dataframes, images, tensors, or bulk records) over XML-RPC introduces severe serialization and copying overhead. For heavy payloads, Behemoth utilizes Apache Arrow memory-mapped IPC files:
-
-1. **Sender Writes**: The sender serializes a `pyarrow.Table` or `RecordBatch` to a temporary `.arrow` file using `pa.RecordBatchFileWriter`.
-2. **String Handle Crosses Control Plane**: The sender passes only the temporary filesystem path string across XML-RPC.
-3. **Receiver Memory-Maps**: The receiver opens the file with `pyarrow.memory_map(path, 'r')` and `pa.RecordBatchFileReader`, gaining instantaneous, zero-copy access to the underlying memory buffers.
-4. **Cleanup**: Once reading is complete, the file handle is unmapped and the temporary file is deleted.
-
-```python
-import pyarrow as pa
-from host_api.arrow_ipc import write_table_to_mmap, read_table_from_mmap, cleanup_mmap
-
-# --- Sending large data from Host to Plugin ---
-table = pa.Table.from_arrays(
-    [pa.array(["row_1", "row_2", "row_3"]), pa.array([100, 200, 300])],
-    names=["id", "value"]
-)
-
-# Step 1: Write to memory-mapped IPC file
-mmap_path = write_table_to_mmap(table)
-
-# Step 2: Pass file path string via XML-RPC
-client.run_action("data_processor", "process_table", {"mmap_path": mmap_path})
-
-# Step 3: Clean up after operation
-cleanup_mmap(mmap_path)
-```
+> **Note on Large Data Transfers**: Behemoth's wire protocol is XML-RPC only. If host applications need custom data transfer mechanisms for large binary payloads, they can implement them via custom API injection (`injected_packages`).
 
 ---
 
@@ -248,4 +217,3 @@ When `PluginManager.load_plugin(plugin_dir)` executes a plugin's `__init__.py`:
 | **`PluginClient`** | Host-side worker lifecycle management, command proxying, stdout forwarding | In-process Python API | Host Process |
 | **`PluginWorkerRPC`** | Worker-side XML-RPC server, request dispatching, error encapsulation | Loopback XML-RPC (HTTP) | Worker Subprocess |
 | **`PluginManager`** | Dependency installation, module loading, strategy matching, reflection | In-process dynamic loading (`importlib`) | Worker Subprocess |
-| **Data Plane IPC** | Zero-copy high-volume data exchange | Memory-mapped Arrow IPC files (`.arrow`) | Shared Kernel Memory / File System |

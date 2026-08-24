@@ -109,7 +109,7 @@ When `client.run_action("hello_plugin", "greet", ...)` is executed:
 
 Now that you have seen the basics in action, explore the architecture and advanced capabilities of Behemoth:
 
-- [Architecture Overview](../architecture/overview.md) — Learn how workers, discovery, and XML-RPC / PyArrow communication layers interact.
+- [Architecture Overview](../architecture/overview.md) — Learn how workers, discovery, and XML-RPC communication layers interact.
 - [Writing Plugins](../guides/writing-plugins.md) — Dive deeper into plugin manifests, action decorators, and custom dependencies.
 - [API Injection](../guides/api-injection.md) — Inject custom host APIs and pre-compiled libraries directly into worker processes.
-- [Zero-Copy PyArrow IPC](../guides/zero-copy-ipc.md) — Transfer massive datasets at memory-bus speeds without serialization overhead.
+- [Strategy Patterns](../guides/strategies.md) — Use declarative strategy matchers to bind plugin functions to UI actions.

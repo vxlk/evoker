@@ -33,7 +33,7 @@ graph LR
 Because memory spaces and module namespaces are completely disjoint:
 - Plugins cannot `import my_host_app_sdk` directly.
 - Plugins cannot call host in-memory functions or share class instances.
-- Re-installing common libraries (such as `pyarrow`, `numpy`, `pandas`, or `rich`) in every plugin's `.venv` wastes disk space and slows down startup.
+- Re-installing common libraries (such as `numpy`, `pandas`, or `rich`) in every plugin's `.venv` wastes disk space and slows down startup.
 
 ---
 
@@ -43,6 +43,7 @@ When initializing `PluginClient`, you can pass a list of filesystem paths via th
 
 ```python
 from pathlib import Path
+import sys
 from plugin_host.client import PluginClient
 
 host_api_dir = Path(__file__).parent / "host_api"
@@ -117,7 +118,7 @@ Plugins can now seamlessly import modules from those directories as if they were
 
 ```python
 # Inside plugins/my_plugin/__init__.py
-from host_api.arrow_ipc import write_table_to_mmap
+from host_api.telemetry import record_metric
 from host_api.logging_utils import get_logger
 ```
 
@@ -134,7 +135,7 @@ my_application/
 ├── host_api/
 │   ├── __init__.py
 │   ├── telemetry.py
-│   └── arrow_ipc.py
+│   └── logging_utils.py
 ├── plugins/
 │   └── telemetry_plugin/
 │       ├── manifest.json
@@ -207,7 +208,7 @@ finally:
 
 ## Injecting Host Dependencies (`site-packages`)
 
-In many applications, the host environment already has heavy packages installed (such as `pyarrow`, `numpy`, `scipy`, `polars`, or `rich`). Rather than forcing every plugin to run `pip install` in its own virtual environment, you can inject the host's `site-packages` directory directly.
+In many applications, the host environment already has heavy packages installed (such as `numpy`, `scipy`, `polars`, or `rich`). Rather than forcing every plugin to run `pip install` in its own virtual environment, you can inject the host's `site-packages` directory directly.
 
 ### Locating `site-packages` Dynamically
 
@@ -253,7 +254,7 @@ The architecture of Behemoth's API Injection is conceptually modeled after moder
 | :--- | :--- | :--- |
 | **Isolation Model** | Sandboxed Go / gRPC subprocesses | Sandboxed Python / XML-RPC subprocesses |
 | **Shared SDK** | `grafana-plugin-sdk-go` injected via protocol & shared build deps | `host_api` packages injected via `sys.path` prepending |
-| **Data Exchange** | Arrow DataFrames over gRPC stream | Zero-copy PyArrow Tables over memory-mapped files |
+| **Data Exchange** | Arrow DataFrames over gRPC stream | XML-RPC primitives; optional host-defined IPC for large binary data |
 | **Extensibility** | Plugins interact through standard SDK interfaces without host memory coupling | Plugins import host-provided modules while preserving process boundary isolation |
 
 ---
@@ -262,4 +263,4 @@ The architecture of Behemoth's API Injection is conceptually modeled after moder
 
 1. **Keep Injected APIs Stateless & Decoupled**: Since the plugin executes in a separate process, do not attempt to share in-memory singletons or global mutable state through injected modules. Injected modules should provide utility functions, protocol definitions, serializers, or stateless client interfaces.
 2. **Use Relative Imports Carefully**: Ensure injected package directories are structured with clear package names (e.g. `host_api`) to avoid shadowing standard library modules.
-3. **Combine with PyArrow IPC**: Use injected APIs to supply shared IPC serializers (like `write_table_to_mmap` and `read_table_from_mmap`) across all plugins seamlessly.
+3. **Custom IPC Mechanisms**: If your application works with large datasets, use injected APIs to supply host-defined IPC utilities (such as shared memory or file serializers) across all plugins seamlessly.

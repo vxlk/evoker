@@ -2,11 +2,11 @@
 
 ![Behemoth Mascot](assets/mascot.jpg)
 
-**Behemoth** is a hyper-modular, multi-headed plugin architecture designed for infinite scale. Built for host applications that require processing massive datasets or orchestrating complex AI workflows, Behemoth isolates plugins in separate processes while maintaining zero-copy data transfer speeds.
+**Behemoth** is a dead-simple, process-isolated plugin system for Python desktop applications. Ship your app with fully decoupled plugins that run in isolated subprocesses — users extend your application by dropping a folder in. No internet required, no install wizards, no shared state bugs.
 
 ## Core Features
 *   **Multi-Headed Isolation**: Plugins run in their own dedicated Python environments (via XML-RPC). If a plugin crashes, your Host Application stays alive.
-*   **Custom API & Dependency Injection**: Host applications can inject their own Python packages, APIs, and pre-compiled dependencies (like `pyarrow` or `numpy`) directly into the `sys.path` of the plugin worker processes using the `injected_packages` parameter.
+*   **Custom API & Dependency Injection**: Host applications can inject their own Python packages and APIs directly into the `sys.path` of the plugin worker processes using the `injected_packages` parameter. Plugins consume host-provided libraries without needing their own installations.
 *   **Auto-Installing Dependencies**: Drop a `requirements.txt` or an offline `wheels/` folder into a plugin, and Behemoth handles the `pip install` transparently upon loading into an isolated virtual environment.
 *   **Deep Introspection**: The `PluginManager` dynamically reads type hints and signature defaults, ensuring your Host knows exactly how to invoke the plugin.
 
@@ -33,7 +33,7 @@ pip install .
 
 ## Usage
 
-For a comprehensive, full-system overview of how to build a Behemoth application, intercept data streams with PyArrow, and package the entire architecture into a standalone PyInstaller binary, check out our official example repository:
+For a comprehensive, full-system overview of how to build a Behemoth application with custom API injection and package the entire architecture into a standalone PyInstaller binary, check out our official example repository:
 
 👉 **[Behemoth Example Host Repository](https://github.com/vxlk/behemoth-example)**
 

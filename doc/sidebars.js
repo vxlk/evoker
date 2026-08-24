@@ -27,7 +27,6 @@ const sidebars = {
         'guides/writing-plugins',
         'guides/api-injection',
         'guides/strategies',
-        'guides/zero-copy-ipc',
         'guides/dependency-management',
         'guides/pyinstaller',
       ],

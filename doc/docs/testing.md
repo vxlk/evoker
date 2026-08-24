@@ -69,7 +69,6 @@ deps =
     pytest
     hypothesis
     pytest-xprocess
-    pyarrow
 commands =
     pytest tests/
 ```
@@ -117,7 +116,7 @@ Verifies core plugin discovery, manifest parsing, syntax validation, function in
 
 ---
 
-### 2. Integration Tests (`tests/test_ipc.py`)
+## 2. Integration Tests (`tests/test_ipc.py`)
 
 Tests end-to-end communication between `PluginClient` and the out-of-process XML-RPC worker.
 
@@ -128,7 +127,7 @@ Tests end-to-end communication between `PluginClient` and the out-of-process XML
 
 ---
 
-### 3. Injection Tests (`tests/test_injection.py`)
+## 3. Injection Tests (`tests/test_injection.py`)
 
 Tests host API and module injection into worker processes.
 
@@ -137,7 +136,7 @@ Tests host API and module injection into worker processes.
 
 ---
 
-### 4. Installer Tests (`tests/test_installer.py`)
+## 4. Installer Tests (`tests/test_installer.py`)
 
 Validates automated dependency installation and virtual environment management.
 
@@ -149,7 +148,7 @@ Validates automated dependency installation and virtual environment management.
 
 ---
 
-### 5. Property & Fuzz Tests (`tests/test_fuzz.py`)
+## 5. Property & Fuzz Tests (`tests/test_fuzz.py`)
 
 Uses `Hypothesis` to generate random, high-entropy inputs to test edge cases and boundary conditions.
 
@@ -163,13 +162,13 @@ Uses `Hypothesis` to generate random, high-entropy inputs to test edge cases and
 
 ---
 
-### 6. Build Tests (`tests/test_build.py`)
+## 6. Build Tests (`tests/test_build.py`)
 
 Verifies standalone binary packaging and distribution capabilities.
 
 - **PyInstaller Compilation**: Executes a full PyInstaller build on Windows.
 - **Binary Execution**: Runs the compiled host executable, verifying that the embedded hook (`--behemoth-worker`) spawns worker subprocesses correctly.
-- **Wheel & Arrow Verification**: Verifies automatic offline wheel building and bidirectional Apache Arrow zero-copy IPC within the compiled standalone distribution.
+- **Wheel & Plugin Verification**: Verifies automatic offline wheel building and plugin execution within the compiled standalone distribution.
 
 ---
 

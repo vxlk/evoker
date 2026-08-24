@@ -14,7 +14,7 @@ This guide covers how to install Behemoth as a library in your application, conf
 
 Before installing Behemoth, ensure your system satisfies the following prerequisites:
 
-- **Python 3.10+**: Behemoth relies on modern type hints, process spawning primitives, and PyArrow integration.
+- **Python 3.10+**: Behemoth relies on modern type hints, subprocess primitives, and XML-RPC.
 - **pip**: Ensure `pip` is updated to a modern version (`pip install --upgrade pip`).
 - **Node.js 18+** *(Optional)*: Required only if you intend to build or preview the local Docusaurus documentation site.
 
@@ -67,7 +67,7 @@ Behemoth provides a root-level `dev.py` script to automate common developer work
 | :--- | :--- |
 | `python dev.py install` | Creates a local `.venv` (if missing), activates it, and installs Behemoth in editable mode with all dev dependencies (`pip install -e .[dev]`). |
 | `python dev.py test` | Runs the full test suite using `pytest` within the isolated development virtual environment. |
-| `python dev.py run-example` | Runs the demonstration application in unbuffered mode (`examples/host.py`), showcasing strategy matching and PyArrow IPC. |
+| `python dev.py run-example` | Runs the demonstration application in unbuffered mode (`examples/host.py`), showcasing strategy matching, process isolation, and API injection. |
 | `python dev.py build-release` | Downloads target standalone Python distributions, installs PyInstaller, and builds a release bundle using `host.spec`. |
 | `python dev.py docs` | Runs the Docusaurus production build (`npm run build` in `doc/`) to compile static documentation. |
 
