@@ -136,4 +136,9 @@ class PluginClient:
         return self.proxy.scan()
         
     def run_action(self, plugin_name: str, action_name: str, kwargs: dict):
-        return self.proxy.invoke(plugin_name, action_name, kwargs)
+        try:
+            return self.proxy.invoke(plugin_name, action_name, kwargs)
+        except xmlrpc.client.Fault:
+            raise
+        except Exception as e:
+            raise ValueError(f"RPC Serialization or Connection Error: {e}")

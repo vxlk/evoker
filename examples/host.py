@@ -3,12 +3,24 @@ import time
 from pathlib import Path
 import pyarrow as pa
 
-# Ensure the Behemoth src is in the python path
-behemoth_src = Path(__file__).parent.parent / "src"
-sys.path.insert(0, str(behemoth_src))
+is_frozen = getattr(sys, "frozen", False)
+if is_frozen:
+    base_dir = Path(sys._MEIPASS)
+else:
+    base_dir = Path(__file__).parent
+
+# Ensure the Behemoth src is in the python path (only when not frozen)
+if not is_frozen:
+    behemoth_src = base_dir.parent / "src"
+    sys.path.insert(0, str(behemoth_src))
+
+# Add host_api to python path so host can use it natively
+host_api_dir = base_dir / "host_api"
+if str(host_api_dir.parent) not in sys.path:
+    sys.path.insert(0, str(host_api_dir.parent))
 
 from plugin_host.client import PluginClient
-from plugin_host.arrow_ipc import write_table_to_mmap, read_table_from_mmap, cleanup_mmap
+from host_api.arrow_ipc import write_table_to_mmap, read_table_from_mmap, cleanup_mmap
 
 def print_separator(title: str):
     print(f"\n{'='*50}")
@@ -18,7 +30,7 @@ def print_separator(title: str):
 def main():
     print_separator("Welcome to the Behemoth Hello World Demo")
     
-    plugins_dir = Path(__file__).parent / "plugins"
+    plugins_dir = base_dir / "plugins"
     print(f"[*] Booting PluginClient pointing to: {plugins_dir}")
     
     # 1. Boot Client with Custom Strategies
@@ -26,7 +38,8 @@ def main():
         plugins_dir,
         strategies=[
             {"type": "prefix", "value": "context_menu_"}
-        ]
+        ],
+        injected_packages=[host_api_dir.parent]
     )
     print("[*] Spawning isolated PluginWorker process...")
     client.start_worker()

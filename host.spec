@@ -7,7 +7,8 @@ a = Analysis(
     binaries=[],
     datas=[
         ('src/plugin_host', 'src/plugin_host'),
-        ('examples/plugins', 'plugins')
+        ('examples/plugins', 'plugins'),
+        ('examples/host_api', 'host_api')
     ],
     hiddenimports=[],
     hookspath=[],

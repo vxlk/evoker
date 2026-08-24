@@ -4,7 +4,7 @@ import sys
 import os
 from pathlib import Path
 
-CORE_DEPS = ["pyarrow"]
+CORE_DEPS = []
 
 logger = logging.getLogger(__name__)
 

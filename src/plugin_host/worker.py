@@ -8,29 +8,40 @@ from plugin_host.manager import PluginManager, PrefixStrategy, ExactMatchStrateg
 
 logger = logging.getLogger(__name__)
 
-if "BEHEMOTH_INJECTED_PACKAGES" in os.environ:
+def parse_injected_packages(env_val: str):
     try:
-        injected = json.loads(os.environ["BEHEMOTH_INJECTED_PACKAGES"])
-        for p in reversed(injected):
-            if p not in sys.path:
-                sys.path.insert(0, p)
+        injected = json.loads(env_val)
+        if isinstance(injected, list):
+            for p in reversed(injected):
+                if p not in sys.path:
+                    sys.path.insert(0, p)
     except Exception as e:
         logger.error(f"Failed to parse BEHEMOTH_INJECTED_PACKAGES: {e}")
+
+if "BEHEMOTH_INJECTED_PACKAGES" in os.environ:
+    parse_injected_packages(os.environ["BEHEMOTH_INJECTED_PACKAGES"])
+
+def parse_strategies(env_val: str):
+    strategies = None
+    try:
+        strategies_config = json.loads(env_val)
+        if isinstance(strategies_config, list):
+            strategies = []
+            for config in strategies_config:
+                if isinstance(config, dict):
+                    if config.get("type") == "prefix":
+                        strategies.append(PrefixStrategy(config["value"]))
+                    elif config.get("type") == "exact":
+                        strategies.append(ExactMatchStrategy(config["value"], config.get("args", [])))
+    except Exception as e:
+        logger.error(f"Failed to parse BEHEMOTH_STRATEGIES: {e}")
+    return strategies
 
 class PluginWorkerRPC:
     def __init__(self, plugins_dir: Path):
         strategies = None
         if "BEHEMOTH_STRATEGIES" in os.environ:
-            try:
-                strategies_config = json.loads(os.environ["BEHEMOTH_STRATEGIES"])
-                strategies = []
-                for config in strategies_config:
-                    if config.get("type") == "prefix":
-                        strategies.append(PrefixStrategy(config["value"]))
-                    elif config.get("type") == "exact":
-                        strategies.append(ExactMatchStrategy(config["value"], config.get("expected_args", [])))
-            except Exception as e:
-                logger.error(f"Failed to parse BEHEMOTH_STRATEGIES: {e}")
+            strategies = parse_strategies(os.environ["BEHEMOTH_STRATEGIES"])
 
         self.manager = PluginManager(strategies=strategies)
         self.plugins_dir = plugins_dir

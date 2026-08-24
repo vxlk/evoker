@@ -1,5 +1,5 @@
 import pyarrow as pa
-from plugin_host.arrow_ipc import write_table_to_mmap, read_table_from_mmap, cleanup_mmap
+from host_api.arrow_ipc import write_table_to_mmap, read_table_from_mmap, cleanup_mmap
 
 # 1. Exact Match Strategy
 def on_start(app_context):

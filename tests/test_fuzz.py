@@ -104,3 +104,54 @@ def test_fuzz_prefix_strategy_no_crash(prefix, random_name):
         strategy.match(random_name, sig_info)
     except Exception as e:
         pytest.fail(f"PrefixStrategy crashed with exception: {e}")
+
+@given(st.text())
+def test_fuzz_injected_packages_env(env_val):
+    """
+    Ensures arbitrary env inputs don't crash injected packages logic.
+    """
+    from plugin_host.worker import parse_injected_packages
+    try:
+        parse_injected_packages(env_val)
+    except Exception as e:
+        pytest.fail(f"parse_injected_packages crashed with: {e}")
+
+@given(st.text())
+def test_fuzz_strategies_env(env_val):
+    """
+    Ensures arbitrary env inputs don't crash strategy parsing logic.
+    """
+    from plugin_host.worker import parse_strategies
+    try:
+        parse_strategies(env_val)
+    except Exception as e:
+        pytest.fail(f"parse_strategies crashed with: {e}")
+
+@given(st.dictionaries(st.text(), st.text()))
+@settings(max_examples=25, suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_fuzz_rpc_serialization(temp_plugins_dir, kwargs_payload):
+    """
+    Ensure the RPC client gracefully raises xmlrpc Faults on arbitrary kwargs,
+    rather than causing hangs or hard crashes.
+    """
+    from plugin_host.client import PluginClient
+    import xmlrpc.client
+    
+    plugin_dir = temp_plugins_dir / "rpc_plugin"
+    plugin_dir.mkdir(parents=True, exist_ok=True)
+    (plugin_dir / "manifest.json").write_text('{"name": "test"}', encoding="utf-8")
+    (plugin_dir / "__init__.py").write_text("def rpc_action(**kwargs): return kwargs", encoding="utf-8")
+    
+    client = PluginClient(temp_plugins_dir)
+    try:
+        client.start_worker()
+        client.get_plugins()
+        try:
+            client.run_action("rpc_plugin", "rpc_action", kwargs_payload)
+        except xmlrpc.client.Fault:
+            pass
+        except ValueError:
+            pass
+    finally:
+        client.stop_worker()
+
