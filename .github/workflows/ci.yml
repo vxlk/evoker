@@ -30,49 +30,50 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pytest hypothesis
-          pip install -e ./bindings/python
+          pip install -e ./hosts/python
 
       - name: Run Python tests
         run: |
-          pytest ./bindings/python/tests
+          cd hosts/python
+          pytest tests
 
       - name: Run Rust tests
         run: |
-          cd bindings/rust
+          cd hosts/rust
           cargo test
 
       - name: Build C++ tests (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          cmake -S bindings/cpp -B bindings/cpp/build -DCMAKE_BUILD_TYPE=Debug
-          cmake --build bindings/cpp/build
-          ./bindings/cpp/build/integration_test
-          ./bindings/cpp/build/cpp_unit_tests
-          ./bindings/cpp/build/cpp_fuzz_test
-          ./bindings/cpp/build/cpp_error_test
+          cmake -S hosts/cpp -B hosts/cpp/build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build hosts/cpp/build
+          ./hosts/cpp/build/integration_test
+          ./hosts/cpp/build/cpp_unit_tests
+          ./hosts/cpp/build/cpp_fuzz_test
+          ./hosts/cpp/build/cpp_error_test
 
       - name: Build C++ tests (Windows)
         if: runner.os == 'Windows'
         run: |
-          cmake -S bindings/cpp -B bindings/cpp/build
-          cmake --build bindings/cpp/build --config Debug
-          .\bindings\cpp\build\Debug\integration_test.exe
-          .\bindings\cpp\build\Debug\cpp_unit_tests.exe
-          .\bindings\cpp\build\Debug\cpp_fuzz_test.exe
-          .\bindings\cpp\build\Debug\cpp_error_test.exe
+          cmake -S hosts/cpp -B hosts/cpp/build
+          cmake --build hosts/cpp/build --config Debug
+          .\hosts\cpp\build\Debug\integration_test.exe
+          .\hosts\cpp\build\Debug\cpp_unit_tests.exe
+          .\hosts\cpp\build\Debug\cpp_fuzz_test.exe
+          .\hosts\cpp\build\Debug\cpp_error_test.exe
 
       - name: Build C tests (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          cmake -S bindings/c -B bindings/c/build -DCMAKE_BUILD_TYPE=Debug
-          cmake --build bindings/c/build
-          ./bindings/c/build/c_integration_test
-          ./bindings/c/build/c_error_test
+          cmake -S hosts/c -B hosts/c/build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build hosts/c/build
+          ./hosts/c/build/c_integration_test
+          ./hosts/c/build/c_error_test
 
       - name: Build C tests (Windows)
         if: runner.os == 'Windows'
         run: |
-          cmake -S bindings/c -B bindings/c/build
-          cmake --build bindings/c/build --config Debug
-          .\bindings\c\build\Debug\c_integration_test.exe
-          .\bindings\c\build\Debug\c_error_test.exe
+          cmake -S hosts/c -B hosts/c/build
+          cmake --build hosts/c/build --config Debug
+          .\hosts\c\build\Debug\c_integration_test.exe
+          .\hosts\c\build\Debug\c_error_test.exe
