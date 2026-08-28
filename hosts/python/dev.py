@@ -59,7 +59,7 @@ def cmd_build_release():
     subprocess.run([str(py_exec), str(pythons_script), "3.13"], check=True)
     
     # Ensure pyinstaller is installed in venv
-    subprocess.run([str(py_exec), "-m", "pip", "install", "pyinstaller"])
+    subprocess.run([str(py_exec), "-m", "pip", "install", "pyinstaller<6.22"])
     run_command([str(py_exec), "-m", "PyInstaller", "host.spec", "--clean"])
 
 def main():
