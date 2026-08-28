@@ -19,6 +19,18 @@ class PluginClient:
         import os
         env = os.environ.copy()
         
+        # Scrub PyInstaller environment variables so they don't break the standalone python
+        env.pop("PYTHONPATH", None)
+        env.pop("PYTHONHOME", None)
+        
+        # PyInstaller modifies PATH to prepend sys._MEIPASS. We must remove it
+        # or else C extensions (like numpy) will load conflicting DLLs from the host bundle.
+        if hasattr(sys, "_MEIPASS"):
+            path_env = env.get("PATH", "")
+            # Filter out the MEIPASS directory
+            clean_paths = [p for p in path_env.split(os.pathsep) if p != sys._MEIPASS and p != sys._MEIPASS + "\\"]
+            env["PATH"] = os.pathsep.join(clean_paths)
+        
         # Strip PyInstaller environment modifications so standalone python doesn't crash
         for var in ["PYTHONPATH", "PYTHONHOME", "PATH"]:
             orig_var = f"ORIG_{var}"
