@@ -6,7 +6,7 @@ sidebar_label: 'Testing'
 
 # Testing
 
-Behemoth features an extensive test suite covering unit validation, out-of-process IPC integration, dynamic package injection, dependency installation, property-based fuzzing, and compiled binary builds.
+Evoker features an extensive test suite covering unit validation, out-of-process IPC integration, dynamic package injection, dependency installation, property-based fuzzing, and compiled binary builds.
 
 ---
 
@@ -167,7 +167,7 @@ Uses `Hypothesis` to generate random, high-entropy inputs to test edge cases and
 Verifies standalone binary packaging and distribution capabilities.
 
 - **PyInstaller Compilation**: Executes a full PyInstaller build on Windows.
-- **Binary Execution**: Runs the compiled host executable, verifying that the embedded hook (`--behemoth-worker`) spawns worker subprocesses correctly.
+- **Binary Execution**: Runs the compiled host executable, verifying that the embedded hook (`--evoker-worker`) spawns worker subprocesses correctly.
 - **Wheel & Plugin Verification**: Verifies automatic offline wheel building and plugin execution within the compiled standalone distribution.
 
 ---

@@ -6,15 +6,15 @@ sidebar_position: 1
 
 # Installation
 
-This guide covers how to install Behemoth as a library in your application, configure development environments, and utilize the built-in development CLI tooling.
+This guide covers how to install Evoker as a library in your application, configure development environments, and utilize the built-in development CLI tooling.
 
 ---
 
 ## Prerequisites
 
-Before installing Behemoth, ensure your system satisfies the following prerequisites:
+Before installing Evoker, ensure your system satisfies the following prerequisites:
 
-- **Python 3.10+**: Behemoth relies on modern type hints, subprocess primitives, and XML-RPC.
+- **Python 3.10+**: Evoker relies on modern type hints, subprocess primitives, and XML-RPC.
 - **pip**: Ensure `pip` is updated to a modern version (`pip install --upgrade pip`).
 - **Node.js 18+** *(Optional)*: Required only if you intend to build or preview the local Docusaurus documentation site.
 
@@ -22,14 +22,14 @@ Before installing Behemoth, ensure your system satisfies the following prerequis
 
 ## Basic Installation
 
-To install Behemoth into your current Python environment directly from the repository source:
+To install Evoker into your current Python environment directly from the repository source:
 
 ```bash
 pip install . --no-cache-dir
 ```
 
 :::warning Pip Caching and Standalone Pythons
-During the build phase (`setup.py`), Behemoth automatically downloads a standalone Python distribution via [`python-build-standalone`](https://github.com/astral-sh/python-build-standalone) and packages it into the distribution.
+During the build phase (`setup.py`), Evoker automatically downloads a standalone Python distribution via [`python-build-standalone`](https://github.com/astral-sh/python-build-standalone) and packages it into the distribution.
 
 `pip` aggressively caches built wheels. If you modify build configurations or standalone Python versions in `setup.py`, running `pip install .` without flags may reuse a stale cached wheel rather than triggering a clean standalone download. **Always use `--no-cache-dir` when installing from local source.**
 :::
@@ -38,7 +38,7 @@ During the build phase (`setup.py`), Behemoth automatically downloads a standalo
 
 ## Development Installation
 
-If you are developing Behemoth itself or writing custom extensions, install the project in **editable mode** along with all development extras:
+If you are developing Evoker itself or writing custom extensions, install the project in **editable mode** along with all development extras:
 
 ```bash
 pip install -e .[dev]
@@ -59,13 +59,13 @@ The `dev` extra includes comprehensive testing, fuzzing, and bundling toolchains
 
 ## Using the `dev.py` CLI
 
-Behemoth provides a root-level `dev.py` script to automate common developer workflows without needing to memorize virtual environment paths or command-line flags.
+Evoker provides a root-level `dev.py` script to automate common developer workflows without needing to memorize virtual environment paths or command-line flags.
 
 ### Common CLI Commands
 
 | Command | Description |
 | :--- | :--- |
-| `python dev.py install` | Creates a local `.venv` (if missing), activates it, and installs Behemoth in editable mode with all dev dependencies (`pip install -e .[dev]`). |
+| `python dev.py install` | Creates a local `.venv` (if missing), activates it, and installs Evoker in editable mode with all dev dependencies (`pip install -e .[dev]`). |
 | `python dev.py test` | Runs the full test suite using `pytest` within the isolated development virtual environment. |
 | `python dev.py run-example` | Runs the demonstration application in unbuffered mode (`examples/host.py`), showcasing strategy matching, process isolation, and API injection. |
 | `python dev.py build-release` | Downloads target standalone Python distributions, installs PyInstaller, and builds a release bundle using `host.spec`. |
@@ -88,4 +88,4 @@ python dev.py run-example
 
 ## Next Steps
 
-Now that you have Behemoth installed, proceed to the [Quick Start Tutorial](./quick-start.md) to build your first plugin and host application.
+Now that you have Evoker installed, proceed to the [Quick Start Tutorial](./quick-start.md) to build your first plugin and host application.

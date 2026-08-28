@@ -29,6 +29,7 @@ const sidebars = {
         'guides/strategies',
         'guides/dependency-management',
         'guides/pyinstaller',
+        'guides/native-bindings',
       ],
     },
     {

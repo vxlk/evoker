@@ -3,7 +3,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Behemoth',
+  title: 'Evoker',
   tagline: 'A high-performance, process-isolated plugin host for Python',
   favicon: 'img/favicon.ico',
 
@@ -12,10 +12,10 @@ const config = {
   },
 
   url: 'https://vxlk.github.io',
-  baseUrl: '/Behemoth/',
+  baseUrl: '/Evoker/',
 
   organizationName: 'vxlk',
-  projectName: 'Behemoth',
+  projectName: 'Evoker',
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
@@ -37,7 +37,7 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/vxlk/Behemoth/tree/master/doc/',
+          editUrl: 'https://github.com/vxlk/Evoker/tree/master/doc/',
         },
         blog: false,
         theme: {
@@ -55,7 +55,7 @@ const config = {
         respectPrefersColorScheme: true,
       },
       navbar: {
-        title: 'Behemoth',
+        title: 'Evoker',
         items: [
           {
             type: 'docSidebar',
@@ -64,7 +64,7 @@ const config = {
             label: 'Docs',
           },
           {
-            href: 'https://github.com/vxlk/Behemoth',
+            href: 'https://github.com/vxlk/Evoker',
             label: 'GitHub',
             position: 'right',
           },
@@ -95,16 +95,16 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/vxlk/Behemoth',
+                href: 'https://github.com/vxlk/Evoker',
               },
               {
                 label: 'Example Project',
-                href: 'https://github.com/vxlk/behemoth-example',
+                href: 'https://github.com/vxlk/evoker-example',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Behemoth. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Evoker. Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,

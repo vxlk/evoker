@@ -6,9 +6,9 @@ sidebar_position: 2
 
 # Custom API Injection
 
-In Behemoth, plugins run in separate subprocesses to provide fault isolation and safety. However, isolated plugins frequently need access to shared host utilities, application SDKs, or pre-installed third-party libraries.
+In Evoker, plugins run in separate subprocesses to provide fault isolation and safety. However, isolated plugins frequently need access to shared host utilities, application SDKs, or pre-installed third-party libraries.
 
-Behemoth provides a clean, zero-overhead mechanism called **Custom API Injection** to bridge this gap.
+Evoker provides a clean, zero-overhead mechanism called **Custom API Injection** to bridge this gap.
 
 ---
 
@@ -58,7 +58,7 @@ client = PluginClient(
 )
 ```
 
-Behemoth automatically propagates these paths to the worker process and injects them into the worker's `sys.path`.
+Evoker automatically propagates these paths to the worker process and injects them into the worker's `sys.path`.
 
 ---
 
@@ -70,7 +70,7 @@ The injection mechanism operates through environment variable serialization and 
 sequenceDiagram
     autonumber
     participant Host as Host Process (PluginClient)
-    participant Env as OS Environment (BEHEMOTH_INJECTED_PACKAGES)
+    participant Env as OS Environment (EVOKER_INJECTED_PACKAGES)
     participant Worker as Worker Process (worker.py)
     participant Plugin as Plugin Module (__init__.py)
 
@@ -84,18 +84,18 @@ sequenceDiagram
 ```
 
 ### 1. Host Resolution & Serialization
-In `client.py`, paths provided to `injected_packages` are converted to absolute paths and serialized as a JSON list into the `BEHEMOTH_INJECTED_PACKAGES` environment variable before launching the subprocess:
+In `client.py`, paths provided to `injected_packages` are converted to absolute paths and serialized as a JSON list into the `EVOKER_INJECTED_PACKAGES` environment variable before launching the subprocess:
 
 ```python
 # Inside client.py
 if self.injected_packages is not None:
-    env["BEHEMOTH_INJECTED_PACKAGES"] = json.dumps(
+    env["EVOKER_INJECTED_PACKAGES"] = json.dumps(
         [str(p.resolve()) for p in self.injected_packages]
     )
 ```
 
 ### 2. Worker Deserialization & Path Prepending
-When `worker.py` boots, it immediately checks for `BEHEMOTH_INJECTED_PACKAGES` before importing plugins:
+When `worker.py` boots, it immediately checks for `EVOKER_INJECTED_PACKAGES` before importing plugins:
 
 ```python
 # Inside worker.py
@@ -107,10 +107,10 @@ def parse_injected_packages(env_val: str):
                 if p not in sys.path:
                     sys.path.insert(0, p)
     except Exception as e:
-        logger.error(f"Failed to parse BEHEMOTH_INJECTED_PACKAGES: {e}")
+        logger.error(f"Failed to parse EVOKER_INJECTED_PACKAGES: {e}")
 
-if "BEHEMOTH_INJECTED_PACKAGES" in os.environ:
-    parse_injected_packages(os.environ["BEHEMOTH_INJECTED_PACKAGES"])
+if "EVOKER_INJECTED_PACKAGES" in os.environ:
+    parse_injected_packages(os.environ["EVOKER_INJECTED_PACKAGES"])
 ```
 
 ### 3. Native Plugin Imports
@@ -248,9 +248,9 @@ client = PluginClient(
 
 ## Architectural Comparison: Grafana Plugin SDK
 
-The architecture of Behemoth's API Injection is conceptually modeled after modern extensibility frameworks like **Grafana Backend Plugins**:
+The architecture of Evoker's API Injection is conceptually modeled after modern extensibility frameworks like **Grafana Backend Plugins**:
 
-| Feature | Grafana Backend Plugins | Behemoth Plugin System |
+| Feature | Grafana Backend Plugins | Evoker Plugin System |
 | :--- | :--- | :--- |
 | **Isolation Model** | Sandboxed Go / gRPC subprocesses | Sandboxed Python / XML-RPC subprocesses |
 | **Shared SDK** | `grafana-plugin-sdk-go` injected via protocol & shared build deps | `host_api` packages injected via `sys.path` prepending |

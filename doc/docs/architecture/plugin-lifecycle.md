@@ -6,7 +6,7 @@ sidebar_label: Plugin Lifecycle
 
 # Plugin Lifecycle
 
-The Behemoth plugin lifecycle encompasses four distinct phases: **Initialization**, **Discovery & Loading**, **Execution**, and **Shutdown**. 
+The Evoker plugin lifecycle encompasses four distinct phases: **Initialization**, **Discovery & Loading**, **Execution**, and **Shutdown**. 
 
 This document provides a detailed end-to-end breakdown of each phase, detailing how the Host application and Worker subprocess coordinate via XML-RPC, environment serialization, dynamic module introspection, and process management.
 
@@ -29,7 +29,7 @@ sequenceDiagram
     Host->>Client: PluginClient(plugins_dir, strategies, injected_packages)
     Host->>Client: start_worker()
     Client->>Client: Sanitize PyInstaller env vars
-    Client->>Client: Set BEHEMOTH_STRATEGIES & BEHEMOTH_INJECTED_PACKAGES
+    Client->>Client: Set EVOKER_STRATEGIES & EVOKER_INJECTED_PACKAGES
     Client->>Client: Resolve Python interpreter (venv -> bundled -> host)
     Client->>Worker: subprocess.Popen(worker.py, env)
     Worker->>Worker: SimpleXMLRPCServer(('localhost', 0))
@@ -117,8 +117,8 @@ When running inside frozen executables (such as PyInstaller bundles), embedded r
 
 ### 3. Strategy and Package Serialization
 The client serializes configuration data into JSON environment variables:
-- `BEHEMOTH_STRATEGIES`: Serialized list of strategy descriptor dictionaries.
-- `BEHEMOTH_INJECTED_PACKAGES`: Serialized list of resolved directory paths.
+- `EVOKER_STRATEGIES`: Serialized list of strategy descriptor dictionaries.
+- `EVOKER_INJECTED_PACKAGES`: Serialized list of resolved directory paths.
 
 ### 4. Interpreter Discovery & Subprocess Launch
 The client resolves the target Python executable following the 3-tier hierarchy:
@@ -251,7 +251,7 @@ When the host calls `client.run_action(plugin_name, action_name, kwargs)`:
 4. The return value is returned across the XML-RPC boundary.
 
 ### 2. Fault Isolation & Error Handling
-A critical design requirement of Behemoth is that buggy or crashing plugins must not terminate the worker process:
+A critical design requirement of Evoker is that buggy or crashing plugins must not terminate the worker process:
 - If a plugin function raises an unhandled Python exception (e.g., `ZeroDivisionError`, `KeyError`, custom exception), `worker.py` catches the error, logs it with traceback information, and re-raises it across XML-RPC.
 - The standard XML-RPC server converts the Python exception into an `xmlrpc.client.Fault` object.
 - The host `PluginClient` receives the `Fault` and raises it to the caller.

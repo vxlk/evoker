@@ -6,7 +6,7 @@ sidebar_label: 'PluginClient'
 
 # PluginClient
 
-`PluginClient` is the primary host-side interface in Behemoth for managing and interacting with out-of-process plugin workers. It handles subprocess lifecycle management, environment variable sanitization, interpreter discovery, and XML-RPC communication over local TCP sockets.
+`PluginClient` is the primary host-side interface in Evoker for managing and interacting with out-of-process plugin workers. It handles subprocess lifecycle management, environment variable sanitization, interpreter discovery, and XML-RPC communication over local TCP sockets.
 
 ```python
 from plugin_host.client import PluginClient
@@ -101,7 +101,7 @@ Spawns the worker subprocess, configures process isolation, captures the allocat
 #### Lifecycle Execution Steps
 
 1. **Environment Sanitization**: Strips PyInstaller-specific environment variables (`PYTHONPATH`, `PYTHONHOME`, `PATH`) or restores original variables (`ORIG_PYTHONPATH`, `ORIG_PATH`) to prevent bundled libraries from contaminating the worker interpreter.
-2. **Configuration Serialization**: Encodes `strategies` into `BEHEMOTH_STRATEGIES` and `injected_packages` into `BEHEMOTH_INJECTED_PACKAGES` as JSON strings within the subprocess environment.
+2. **Configuration Serialization**: Encodes `strategies` into `EVOKER_STRATEGIES` and `injected_packages` into `EVOKER_INJECTED_PACKAGES` as JSON strings within the subprocess environment.
 3. **Interpreter Discovery**: Resolves the Python executable in order of priority:
    - Plugin-specific virtual environment (`.venv/Scripts/python.exe` or `.venv/bin/python`)
    - Standalone bundled Python (`pythons/python-*/python/python.exe`)

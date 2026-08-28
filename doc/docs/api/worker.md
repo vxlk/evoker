@@ -33,8 +33,8 @@ sequenceDiagram
     participant Manager as PluginManager
 
     CLI->>Init: Run worker.py <plugins_dir>
-    Init->>Init: parse_injected_packages(BEHEMOTH_INJECTED_PACKAGES)
-    Init->>Init: parse_strategies(BEHEMOTH_STRATEGIES)
+    Init->>Init: parse_injected_packages(EVOKER_INJECTED_PACKAGES)
+    Init->>Init: parse_strategies(EVOKER_STRATEGIES)
     Init->>Server: Initialize SimpleXMLRPCServer("localhost", port=0)
     Server-->>Init: Ephemeral Port Assigned
     Init->>CLI: Print "RPC_PORT:<port>"
@@ -63,7 +63,7 @@ sequenceDiagram
 def parse_injected_packages(env_val: str) -> None
 ```
 
-Parses a JSON-encoded array of filesystem paths from the `BEHEMOTH_INJECTED_PACKAGES` environment variable and injects them into the worker's `sys.path`.
+Parses a JSON-encoded array of filesystem paths from the `EVOKER_INJECTED_PACKAGES` environment variable and injects them into the worker's `sys.path`.
 
 #### Injection Rules
 
@@ -73,11 +73,11 @@ Parses a JSON-encoded array of filesystem paths from the `BEHEMOTH_INJECTED_PACK
 
 #### Auto-execution on Import
 
-`plugin_host.worker` automatically checks and parses `BEHEMOTH_INJECTED_PACKAGES` during module load:
+`plugin_host.worker` automatically checks and parses `EVOKER_INJECTED_PACKAGES` during module load:
 
 ```python
-if "BEHEMOTH_INJECTED_PACKAGES" in os.environ:
-    parse_injected_packages(os.environ["BEHEMOTH_INJECTED_PACKAGES"])
+if "EVOKER_INJECTED_PACKAGES" in os.environ:
+    parse_injected_packages(os.environ["EVOKER_INJECTED_PACKAGES"])
 ```
 
 ---
@@ -88,7 +88,7 @@ if "BEHEMOTH_INJECTED_PACKAGES" in os.environ:
 def parse_strategies(env_val: str) -> Optional[List[PluginStrategy]]
 ```
 
-Parses a JSON-encoded array of strategy configurations from the `BEHEMOTH_STRATEGIES` environment variable and instantiates corresponding `PluginStrategy` objects.
+Parses a JSON-encoded array of strategy configurations from the `EVOKER_STRATEGIES` environment variable and instantiates corresponding `PluginStrategy` objects.
 
 #### Supported Types
 
@@ -140,7 +140,7 @@ The RPC handler class registered with the `SimpleXMLRPCServer`. All public metho
 
 ### State & Initialization
 
-- Inspects `os.environ["BEHEMOTH_STRATEGIES"]` to initialize custom strategies.
+- Inspects `os.environ["EVOKER_STRATEGIES"]` to initialize custom strategies.
 - Instantiates an internal `PluginManager(strategies=strategies)`.
 - Sets `plugins_dir` and initializes `actions_manifest = {}`.
 

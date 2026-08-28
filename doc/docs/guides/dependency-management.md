@@ -8,13 +8,13 @@ sidebar_position: 5
 
 Plugins often require third-party libraries (e.g. `scikit-learn`, `requests`, `polars`) that are not part of the host Python runtime.
 
-Behemoth provides a fully automated, resilient dependency management system that creates isolated virtual environments, caches offline binary wheels, handles air-gapped deployments, and recovers gracefully from installation errors.
+Evoker provides a fully automated, resilient dependency management system that creates isolated virtual environments, caches offline binary wheels, handles air-gapped deployments, and recovers gracefully from installation errors.
 
 ---
 
 ## How Dependency Installation Works
 
-When `PluginManager.load_plugin(plugin_dir)` is called, Behemoth inspects the directory for a `requirements.txt` file. If found, `plugin_host.installer` initiates an automated resolution pipeline:
+When `PluginManager.load_plugin(plugin_dir)` is called, Evoker inspects the directory for a `requirements.txt` file. If found, `plugin_host.installer` initiates an automated resolution pipeline:
 
 ```mermaid
 flowchart TD
@@ -38,7 +38,7 @@ flowchart TD
 ## 1. Automatic Virtual Environments (`.venv`)
 
 If a plugin contains `requirements.txt` and has not been initialized:
-1. Behemoth locates the target Python interpreter:
+1. Evoker locates the target Python interpreter:
    - **Bundled Standalone Python**: Checks for an embedded standalone Python interpreter in `plugin_host/pythons/`.
    - **Host Python Fallback**: If no bundled standalone Python is found, falls back to `sys.executable`.
 2. Creates an isolated virtual environment at `<plugin_dir>/.venv`:
@@ -51,13 +51,13 @@ If a plugin contains `requirements.txt` and has not been initialized:
 
 ## 2. Automatic Wheel Caching
 
-To optimize subsequent boots and prepare plugins for offline redistribution, Behemoth automatically manages a `wheels/` cache directory:
+To optimize subsequent boots and prepare plugins for offline redistribution, Evoker automatically manages a `wheels/` cache directory:
 
-1. **Wheel Building**: If `<plugin_dir>/wheels/` does not exist or is empty, Behemoth runs:
+1. **Wheel Building**: If `<plugin_dir>/wheels/` does not exist or is empty, Evoker runs:
    ```bash
    pip wheel -r requirements.txt -w <plugin_dir>/wheels
    ```
-2. **Local Installation**: Behemoth then executes the install command using `--find-links`:
+2. **Local Installation**: Evoker then executes the install command using `--find-links`:
    ```bash
    pip install -r requirements.txt --find-links <plugin_dir>/wheels
    ```
@@ -91,7 +91,7 @@ For secure enterprise environments, air-gapped systems, or embedded desktop bund
            ├── requests-2.31.0-py3-none-any.whl
            └── urllib3-2.2.1-py3-none-any.whl
    ```
-3. Distribute the `my_plugin` directory. When Behemoth launches on an air-gapped machine, it detects the existing `wheels/` directory and installs entirely offline via `--find-links`.
+3. Distribute the `my_plugin` directory. When Evoker launches on an air-gapped machine, it detects the existing `wheels/` directory and installs entirely offline via `--find-links`.
 
 ---
 

@@ -8,7 +8,7 @@ sidebar_position: 6
 
 Packaging a dynamic plugin-based Python application into a standalone executable presents unique challenges: plugins must be discovered at runtime, external virtual environments need access to host source packages, and subprocesses must spawn without re-triggering main GUI or CLI routines.
 
-Behemoth provides built-in PyInstaller integration designed specifically for robust standalone desktop and server distribution.
+Evoker provides built-in PyInstaller integration designed specifically for robust standalone desktop and server distribution.
 
 ---
 
@@ -27,7 +27,7 @@ In One-Dir mode, the application sits in a permanent folder (e.g. `dist/host/`),
 
 ## 2. Built-in PyInstaller Hooks
 
-When `behemoth_plugin_host` is installed in your development environment, it automatically registers PyInstaller hooks via the `pyinstaller40` entry point in `setup.py`:
+When `evoker_plugin_host` is installed in your development environment, it automatically registers PyInstaller hooks via the `pyinstaller40` entry point in `setup.py`:
 
 ```python
 entry_points={
@@ -50,13 +50,13 @@ entry_points={
 
 ---
 
-## 3. The `--behemoth-worker` Interception Trick
+## 3. The `--evoker-worker` Interception Trick
 
 When your frozen application launches on a user machine without an external Python interpreter, `PluginClient` uses the bundled executable itself (`sys.executable`) to spawn the worker subprocess.
 
 Normally, running `host.exe` would start a second copy of the entire host application, leading to infinite subprocess recursion.
 
-Behemoth resolves this using the `--behemoth-worker` interception trick:
+Evoker resolves this using the `--evoker-worker` interception trick:
 
 ```mermaid
 sequenceDiagram
@@ -68,10 +68,10 @@ sequenceDiagram
     participant Worker as plugin_host.worker
 
     Host->>Client: client.start_worker()
-    Client->>Sub: Spawns: host.exe --behemoth-worker worker.py plugins/
+    Client->>Sub: Spawns: host.exe --evoker-worker worker.py plugins/
     Note over Sub: host.exe begins booting Python runtime
     Sub->>Hook: Imports plugin_host package
-    Note over Hook: Detects sys.argv[1] == '--behemoth-worker'
+    Note over Hook: Detects sys.argv[1] == '--evoker-worker'
     Hook->>Worker: runpy.run_module('plugin_host.worker', run_name='__main__')
     Worker->>Worker: Starts XML-RPC Server & Scans Plugins
     Note over Hook,Worker: Hook calls sys.exit(0) upon worker completion
@@ -83,10 +83,10 @@ sequenceDiagram
 ```python
 import sys
 
-if len(sys.argv) >= 3 and sys.argv[1] == '--behemoth-worker':
+if len(sys.argv) >= 3 and sys.argv[1] == '--evoker-worker':
     import runpy
     
-    # Strip --behemoth-worker argument
+    # Strip --evoker-worker argument
     sys.argv = ["plugin_host.worker"] + sys.argv[3:]
     
     # Run the worker module directly from the embedded PYZ archive
@@ -102,7 +102,7 @@ if len(sys.argv) >= 3 and sys.argv[1] == '--behemoth-worker':
 
 Inside a frozen PyInstaller bundle, `__file__` often points to the internal `_internal/` directory or transient extraction path.
 
-Behemoth provides a helper function `get_app_dir(__file__)` in `plugin_host.utils` that reliably resolves to the directory containing the `.exe` when frozen, while falling back to standard script parent paths during development:
+Evoker provides a helper function `get_app_dir(__file__)` in `plugin_host.utils` that reliably resolves to the directory containing the `.exe` when frozen, while falling back to standard script parent paths during development:
 
 ```python
 from pathlib import Path
@@ -123,7 +123,7 @@ client = PluginClient(
 
 ## 5. PyInstaller Spec File (`host.spec`)
 
-Below is a complete, minimal `host.spec` configuration for packaging a Behemoth host application in One-Dir mode:
+Below is a complete, minimal `host.spec` configuration for packaging a Evoker host application in One-Dir mode:
 
 ```python
 # -*- mode: python ; coding: utf-8 -*-
@@ -220,6 +220,6 @@ Write-Host "You can now run: .\dist\host\host.exe" -ForegroundColor Yellow
 
 - [x] Use **One-Dir mode** (`COLLECT` in `.spec` or `pyinstaller -D`).
 - [x] Use `get_app_dir(__file__)` to reference `plugins` and `host_api` paths.
-- [x] Ensure `behemoth_plugin_host` hooks are active (`hiddenimports=['plugin_host.worker']`).
+- [x] Ensure `evoker_plugin_host` hooks are active (`hiddenimports=['plugin_host.worker']`).
 - [x] Deploy `plugins/` and `host_api/` folders alongside `host.exe` post-build.
 - [x] Pre-populate `wheels/` in plugin folders for air-gapped environments.

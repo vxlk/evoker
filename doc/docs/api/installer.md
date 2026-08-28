@@ -20,7 +20,7 @@ from plugin_host.installer import (
 
 ## Dependency Resolution Flow
 
-The following diagram illustrates how Behemoth resolves, caches, and installs plugin dependencies:
+The following diagram illustrates how Evoker resolves, caches, and installs plugin dependencies:
 
 ```mermaid
 flowchart TD

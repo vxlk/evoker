@@ -6,9 +6,9 @@ sidebar_label: Overview
 
 # Architecture Overview
 
-Behemoth is a high-performance, process-isolated plugin framework designed for Python applications that require dynamic extensibility, crash resilience, and cross-interpreter dependency isolation.
+Evoker is a high-performance, process-isolated plugin framework designed for Python applications that require dynamic extensibility, crash resilience, and cross-interpreter dependency isolation.
 
-This document outlines Behemoth's architectural pillars: the multi-process isolation model, the XML-RPC communication architecture, multi-tier interpreter discovery, and the multi-layered sys.path injection pipeline.
+This document outlines Evoker's architectural pillars: the multi-process isolation model, the XML-RPC communication architecture, multi-tier interpreter discovery, and the multi-layered sys.path injection pipeline.
 
 ---
 
@@ -20,7 +20,7 @@ Modern plugin architectures in Python face severe challenges when loading third-
 - **Uncontrolled Global State**: Plugins modifying global state or monkey-patching built-ins can pollute the host application.
 - **Fatal Crashes**: Unhandled panics or native crashes terminate the host application instantly.
 
-To eliminate these failure modes, Behemoth implements a **multi-process architecture**. The Host application does not execute plugin code directly; instead, it spawns dedicated Worker subprocesses via Python's `subprocess.Popen`.
+To eliminate these failure modes, Evoker implements a **multi-process architecture**. The Host application does not execute plugin code directly; instead, it spawns dedicated Worker subprocesses via Python's `subprocess.Popen`.
 
 ```mermaid
 graph TB
@@ -62,7 +62,7 @@ graph TB
 
 ## Communication Architecture (XML-RPC)
 
-Behemoth uses XML-RPC over loopback TCP for communication between the host application and worker subprocesses.
+Evoker uses XML-RPC over loopback TCP for communication between the host application and worker subprocesses.
 
 ```mermaid
 flowchart LR
@@ -108,13 +108,13 @@ manifest = client.get_plugins()
 result = client.run_action("hello_world_plugin", "greet", {"name": "Alice"})
 ```
 
-> **Note on Large Data Transfers**: Behemoth's wire protocol is XML-RPC only. If host applications need custom data transfer mechanisms for large binary payloads, they can implement them via custom API injection (`injected_packages`).
+> **Note on Large Data Transfers**: Evoker's wire protocol is XML-RPC only. If host applications need custom data transfer mechanisms for large binary payloads, they can implement them via custom API injection (`injected_packages`).
 
 ---
 
 ## Multi-Tier Interpreter Discovery
 
-When spawning a worker subprocess, Behemoth determines the appropriate Python interpreter using a 3-tier priority resolution strategy.
+When spawning a worker subprocess, Evoker determines the appropriate Python interpreter using a 3-tier priority resolution strategy.
 
 ```mermaid
 graph TD
@@ -132,28 +132,28 @@ graph TD
 ### Resolution Order
 
 1. **Plugin Virtual Environment (`<plugin_dir>/.venv`)**:
-   - If any plugin in `plugins_dir` contains a `.venv` folder, Behemoth resolves the interpreter to `<plugin_dir>/.venv/Scripts/python.exe` (Windows) or `<plugin_dir>/.venv/bin/python` (POSIX).
+   - If any plugin in `plugins_dir` contains a `.venv` folder, Evoker resolves the interpreter to `<plugin_dir>/.venv/Scripts/python.exe` (Windows) or `<plugin_dir>/.venv/bin/python` (POSIX).
    - This ensures plugins with specialized dependencies run inside an isolated virtual environment.
 
 2. **Bundled Standalone Python Distribution**:
-   - If `src/plugin_host/pythons/` contains a portable `python-build-standalone` installation (pre-fetched ahead of time via `scripts/download_pythons.py`), Behemoth uses that standalone binary (`python/python.exe` or `python/bin/python3`).
+   - If `src/plugin_host/pythons/` contains a portable `python-build-standalone` installation (pre-fetched ahead of time via `scripts/download_pythons.py`), Evoker uses that standalone binary (`python/python.exe` or `python/bin/python3`).
    - This allows packaged desktop distributions (e.g., PyInstaller binaries) to run external Python workers without requiring a system-wide Python installation.
 
 3. **Host Interpreter (`sys.executable`)**:
-   - As a final fallback, Behemoth uses the interpreter running the host application (`Path(sys.executable)`).
+   - As a final fallback, Evoker uses the interpreter running the host application (`Path(sys.executable)`).
 
 ### Frozen Environments (PyInstaller)
 
 When the host application is packaged with PyInstaller (`getattr(sys, "frozen", False) == True`):
 - PyInstaller modifies environment variables such as `PYTHONPATH` and `PYTHONHOME`.
 - `PluginClient.start_worker()` sanitizes the child environment by restoring `ORIG_PYTHONPATH` / `ORIG_PYTHONHOME` or removing them to prevent standalone interpreters from loading PyInstaller's embedded libraries.
-- If using the frozen executable itself as the worker interpreter, Behemoth passes `--behemoth-worker` so the executable's entry point intercepts the flag and invokes `worker.py` rather than re-launching the main GUI/CLI host.
+- If using the frozen executable itself as the worker interpreter, Evoker passes `--evoker-worker` so the executable's entry point intercepts the flag and invokes `worker.py` rather than re-launching the main GUI/CLI host.
 
 ---
 
 ## Injection Layers
 
-To enable seamless code execution across process boundaries, Behemoth uses a **3-tier injection pipeline** that configures module resolution paths at different stages of the process lifecycle.
+To enable seamless code execution across process boundaries, Evoker uses a **3-tier injection pipeline** that configures module resolution paths at different stages of the process lifecycle.
 
 ```mermaid
 flowchart TB
@@ -161,7 +161,7 @@ flowchart TB
         L1_Desc["Host injects plugin_host source location into PYTHONPATH env var.<br/>Worker subprocess can import 'plugin_host' regardless of interpreter location."]
     end
 
-    subgraph Layer2["2. Custom API Injection (BEHEMOTH_INJECTED_PACKAGES)"]
+    subgraph Layer2["2. Custom API Injection (EVOKER_INJECTED_PACKAGES)"]
         L2_Desc["Host serializes shared API package directories into JSON env var.<br/>Worker deserializes and prepends them to sys.path at startup."]
     end
 
@@ -178,7 +178,7 @@ When the worker runs under an isolated standalone Python or virtual environment,
 - In dynamic/dev mode: `PluginClient` sets `PYTHONPATH` to the parent directory of `plugin_host`.
 - In PyInstaller frozen mode: `PluginClient` sets `PYTHONPATH` to the extracted `plugin_host_src` directory inside `sys._MEIPASS`.
 
-### 2. Custom API Injection (`BEHEMOTH_INJECTED_PACKAGES`)
+### 2. Custom API Injection (`EVOKER_INJECTED_PACKAGES`)
 The Host application may provide domain-specific SDKs or IPC utilities (such as `host_api`) that plugins must be able to import.
 
 ```python
@@ -189,7 +189,7 @@ client = PluginClient(
 )
 ```
 
-The client serializes this list to the `BEHEMOTH_INJECTED_PACKAGES` environment variable as a JSON string. During worker startup in `worker.py`, the paths are deserialized and prepended to `sys.path`:
+The client serializes this list to the `EVOKER_INJECTED_PACKAGES` environment variable as a JSON string. During worker startup in `worker.py`, the paths are deserialized and prepended to `sys.path`:
 
 ```python
 # worker.py startup

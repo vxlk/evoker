@@ -6,15 +6,15 @@ sidebar_position: 1
 
 # Writing Plugins
 
-Plugins in Behemoth are self-contained Python packages that execute in dedicated, isolated worker processes. They expose capabilities to the host application through automatically introspected public functions and metadata manifests.
+Plugins in Evoker are self-contained Python packages that execute in dedicated, isolated worker processes. They expose capabilities to the host application through automatically introspected public functions and metadata manifests.
 
-This guide covers everything you need to build, structure, and optimize plugins for the Behemoth architecture.
+This guide covers everything you need to build, structure, and optimize plugins for the Evoker architecture.
 
 ---
 
 ## Plugin Directory Structure
 
-Every plugin in Behemoth lives in its own subdirectory inside the designated plugins directory (e.g., `plugins/<plugin_name>/`).
+Every plugin in Evoker lives in its own subdirectory inside the designated plugins directory (e.g., `plugins/<plugin_name>/`).
 
 A minimal plugin requires only two files:
 1. `manifest.json` — Describes the plugin name, version, and metadata.
@@ -37,7 +37,7 @@ plugins/
 
 ## The Plugin Manifest (`manifest.json`)
 
-The manifest file is the declarative descriptor of the plugin. When Behemoth scans a plugin directory, it first loads and validates `manifest.json`.
+The manifest file is the declarative descriptor of the plugin. When Evoker scans a plugin directory, it first loads and validates `manifest.json`.
 
 ### Schema
 
@@ -65,7 +65,7 @@ If `manifest.json` is missing or is not valid JSON, `PluginManager` logs a warni
 
 ## Function Discovery & Export Rules
 
-Behemoth uses Python's runtime inspection (`inspect` module) to dynamically discover actions inside each plugin's `__init__.py`.
+Evoker uses Python's runtime inspection (`inspect` module) to dynamically discover actions inside each plugin's `__init__.py`.
 
 ### Discovery Rules
 
@@ -87,12 +87,12 @@ flowchart TD
 
 ## Type Hints & Signature Introspection
 
-Behemoth inspects function signatures to provide rich runtime metadata to the host application. This allows host UIs to generate dynamic forms, validate inputs, and display documentation tooltips.
+Evoker inspects function signatures to provide rich runtime metadata to the host application. This allows host UIs to generate dynamic forms, validate inputs, and display documentation tooltips.
 
 ### Type Annotations
 
-- **Typed Parameters**: When a parameter has a type hint (`param: int`), Behemoth extracts the type name (`"int"`, `"float"`, `"str"`, `"bool"`, `"dict"`, `"list"`).
-- **Untyped Parameters**: If a parameter lacks a type hint, Behemoth falls back to `"str"` and logs a warning:
+- **Typed Parameters**: When a parameter has a type hint (`param: int`), Evoker extracts the type name (`"int"`, `"float"`, `"str"`, `"bool"`, `"dict"`, `"list"`).
+- **Untyped Parameters**: If a parameter lacks a type hint, Evoker falls back to `"str"` and logs a warning:
   ```text
   WARNING: Argument 'count' in action 'process' lacks type hint. Defaulting to str.
   ```
@@ -125,7 +125,7 @@ When `client.get_plugins()` is called on the host, the worker returns a dictiona
 
 ## Return Values & Serialization
 
-Behemoth communicates between the host process and isolated worker processes using an XML-RPC control channel.
+Evoker communicates between the host process and isolated worker processes using an XML-RPC control channel.
 
 ### Supported XML-RPC Types
 
@@ -176,7 +176,7 @@ import re
 from typing import Dict, List, Any
 
 # ---------------------------------------------------------------------------
-# Private Helper Functions (Ignored by Behemoth discovery)
+# Private Helper Functions (Ignored by Evoker discovery)
 # ---------------------------------------------------------------------------
 
 def _tokenize(text: str) -> List[str]:
@@ -273,7 +273,7 @@ try:
     # Output: ['on_start', 'context_menu_summarize_selection', 'count_words', 'filter_top_words']
 
     # 3. Invoke standard action
-    sample_text = "Behemoth plugin system. Fast, isolated, and scalable plugin system."
+    sample_text = "Evoker plugin system. Fast, isolated, and scalable plugin system."
     stats = client.run_action(
         "text_analyzer", 
         "count_words", 

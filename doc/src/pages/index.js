@@ -12,7 +12,7 @@ function HeroSection() {
       <div className={styles.heroInner}>
         <div className={styles.heroText}>
           <Heading as="h1" className={styles.heroTitle}>
-            Behemoth
+            Evoker
           </Heading>
           <p className={styles.heroTagline}>
             A dead-simple plugin system for Python desktop apps.
@@ -25,7 +25,7 @@ function HeroSection() {
             <Link className={styles.btnPrimary} to="/docs/intro">
               Get Started →
             </Link>
-            <Link className={styles.btnSecondary} to="https://github.com/vxlk/Behemoth">
+            <Link className={styles.btnSecondary} to="https://github.com/vxlk/Evoker">
               GitHub
             </Link>
           </div>
@@ -72,7 +72,7 @@ const features = [
   {
     emoji: '✈️',
     title: 'Air-Gapped Ready',
-    description: 'Ship plugins with pre-built wheel files. Behemoth installs dependencies from local wheels — no internet connection needed. Perfect for enterprise and offline deployments.',
+    description: 'Ship plugins with pre-built wheel files. Evoker installs dependencies from local wheels — no internet connection needed. Perfect for enterprise and offline deployments.',
   },
   {
     emoji: '💉',
@@ -88,6 +88,11 @@ const features = [
     emoji: '📦',
     title: 'Ships as an .exe',
     description: 'First-class PyInstaller support with custom hooks. Compile your entire app into a standalone binary. Users add plugins next to the .exe.',
+  },
+  {
+    emoji: '⚡',
+    title: 'Stateless Entrypoints',
+    description: 'Designed for a host-driven, request-response model. Plugins act as stateless functions to invoke, enforcing clean API separation rather than chatty, two-way synchronized state.',
   },
 ];
 
@@ -106,7 +111,7 @@ function FeaturesSection() {
     <section className={styles.features}>
       <div className="container">
         <Heading as="h2" className={styles.sectionTitle}>
-          Why Behemoth?
+          Why Evoker?
         </Heading>
         <div className={styles.featureGrid}>
           {features.map((props, idx) => (
@@ -175,9 +180,9 @@ function CTASection() {
         </Heading>
         <div className={styles.heroButtons}>
           <Link className={styles.btnPrimary} to="/docs/getting-started/installation">
-            Install Behemoth →
+            Install Evoker →
           </Link>
-          <Link className={styles.btnSecondary} to="https://github.com/vxlk/behemoth-example">
+          <Link className={styles.btnSecondary} to="https://github.com/vxlk/evoker-example">
             See Full Example
           </Link>
         </div>
@@ -189,7 +194,7 @@ function CTASection() {
 export default function Home() {
   return (
     <Layout
-      title="Behemoth — Plugin System for Python Desktop Apps"
+      title="Evoker — Plugin System for Python Desktop Apps"
       description="A dead-simple, process-isolated plugin system for Python desktop applications. Ship extensible apps with air-gapped plugin support.">
       <HeroSection />
       <main>

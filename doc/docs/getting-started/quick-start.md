@@ -6,7 +6,7 @@ sidebar_position: 2
 
 # Quick Start
 
-In this tutorial, you will create a minimal Behemoth application in 3 simple steps:
+In this tutorial, you will create a minimal Evoker application in 3 simple steps:
 1. Define a plugin directory with a manifest and entry point.
 2. Initialize and invoke the plugin using `PluginClient` in a host script.
 3. Run the application and observe process-isolated execution.
@@ -107,7 +107,7 @@ When `client.run_action("hello_plugin", "greet", ...)` is executed:
 
 ## What's Next?
 
-Now that you have seen the basics in action, explore the architecture and advanced capabilities of Behemoth:
+Now that you have seen the basics in action, explore the architecture and advanced capabilities of Evoker:
 
 - [Architecture Overview](../architecture/overview.md) — Learn how workers, discovery, and XML-RPC communication layers interact.
 - [Writing Plugins](../guides/writing-plugins.md) — Dive deeper into plugin manifests, action decorators, and custom dependencies.

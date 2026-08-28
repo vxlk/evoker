@@ -6,7 +6,7 @@ sidebar_position: 3
 
 # Strategy Patterns
 
-In Behemoth, **Strategies** are declarative introspection rules that match plugin function names, validate their parameter signatures, and extract structural metadata. They serve as the critical bridge between raw Python functions in a plugin and high-level host concepts like lifecycle hooks, dynamic menu bars, toolbars, and event listeners.
+In Evoker, **Strategies** are declarative introspection rules that match plugin function names, validate their parameter signatures, and extract structural metadata. They serve as the critical bridge between raw Python functions in a plugin and high-level host concepts like lifecycle hooks, dynamic menu bars, toolbars, and event listeners.
 
 ---
 
@@ -30,7 +30,7 @@ When the host queries `client.get_plugins()`, this metadata is returned as part 
 
 ## Built-in Strategies
 
-Behemoth provides two core strategy implementations: `ExactMatchStrategy` and `PrefixStrategy`.
+Evoker provides two core strategy implementations: `ExactMatchStrategy` and `PrefixStrategy`.
 
 ### 1. `ExactMatchStrategy`
 
@@ -45,7 +45,7 @@ ExactMatchStrategy(exact_name="on_start", expected_args=["app_context"])
 #### How It Works:
 - If a function matches `exact_name`, the strategy checks whether the parameter names match `expected_args` in exact order.
 - If the signature **matches**, it returns an empty metadata dictionary `{}` and marks the action as a recognized keyword action (`is_keyword = True`).
-- If the signature **does not match**, it logs a warning and raises a `ValueError("Signature mismatch")`, which causes Behemoth to **reject and ignore** the invalid function.
+- If the signature **does not match**, it logs a warning and raises a `ValueError("Signature mismatch")`, which causes Evoker to **reject and ignore** the invalid function.
 
 ```python
 # Valid Match
@@ -106,8 +106,8 @@ client = PluginClient(
 
 ### Under the Hood Serialization
 
-1. **Host Side (`client.py`)**: The `strategies` configuration list is converted to JSON and stored in the `BEHEMOTH_STRATEGIES` environment variable before spawning `worker.py`.
-2. **Worker Side (`worker.py`)**: During initialization, `worker.py` parses `BEHEMOTH_STRATEGIES` and instantiates the corresponding `PrefixStrategy` and `ExactMatchStrategy` objects:
+1. **Host Side (`client.py`)**: The `strategies` configuration list is converted to JSON and stored in the `EVOKER_STRATEGIES` environment variable before spawning `worker.py`.
+2. **Worker Side (`worker.py`)**: During initialization, `worker.py` parses `EVOKER_STRATEGIES` and instantiates the corresponding `PrefixStrategy` and `ExactMatchStrategy` objects:
 
 ```python
 # worker.py
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
 ## Writing Custom Strategies
 
-You can extend Behemoth by creating your own custom strategy classes. All strategies inherit from the abstract base class `PluginStrategy`.
+You can extend Evoker by creating your own custom strategy classes. All strategies inherit from the abstract base class `PluginStrategy`.
 
 ### The `PluginStrategy` Interface
 
