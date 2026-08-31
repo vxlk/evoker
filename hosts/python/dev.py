@@ -36,7 +36,7 @@ def cmd_build():
 
 def cmd_docs():
     print("Building documentation...")
-    run_command(["npm", "run", "build"], cwd="docs")
+    run_command(["npm", "run", "build"], cwd="../../doc")
 
 def cmd_test():
     print("Running tests...")
