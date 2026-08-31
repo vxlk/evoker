@@ -35,7 +35,9 @@ test_venv/
 .docusaurus/
 node_modules/
 
-src/plugin_host/docs_html/*
+# Evoker specific generated
+hosts/python/src/plugin_host/docs_html/
+hosts/python/src/plugin_host/pythons/dist/
 *.egg-info/
 hosts/rust/target/
 hosts/c/build/

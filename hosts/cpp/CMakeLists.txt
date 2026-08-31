@@ -13,8 +13,14 @@ FetchContent_Declare(
     httplib
     URL https://github.com/yhirose/cpp-httplib/archive/refs/tags/v0.14.1.tar.gz
 )
-set(HTTPLIB_REQUIRE_OPENSSL ON)
-set(CPPHTTPLIB_OPENSSL_SUPPORT ON)
+find_package(OpenSSL 1.1.1 QUIET)
+if (OpenSSL_FOUND)
+    set(HTTPLIB_REQUIRE_OPENSSL ON)
+    set(CPPHTTPLIB_OPENSSL_SUPPORT ON)
+else()
+    set(HTTPLIB_REQUIRE_OPENSSL OFF)
+    set(CPPHTTPLIB_OPENSSL_SUPPORT OFF)
+endif()
 FetchContent_MakeAvailable(httplib)
 
 # Fetch tinyxml2
@@ -36,6 +42,9 @@ FetchContent_MakeAvailable(reproc)
 add_library(evoker_host src/evoker_client.cpp)
 target_include_directories(evoker_host PUBLIC include)
 target_link_libraries(evoker_host PRIVATE httplib::httplib tinyxml2 reproc++)
+if (OpenSSL_FOUND)
+    target_compile_definitions(evoker_host PRIVATE EVOKER_HAS_TLS)
+endif()
 
 add_executable(evoker_cpp_host src/main.cpp)
 target_link_libraries(evoker_cpp_host PRIVATE evoker_host)

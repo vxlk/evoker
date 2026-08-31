@@ -120,6 +120,7 @@ static std::string bootstrap_python() {
     std::cout << "Bootstrapping Python for Evoker..." << std::endl;
 
     std::string download_url;
+#ifdef EVOKER_HAS_TLS
     {
         httplib::Client cli("https://api.github.com");
         cli.set_follow_location(true);
@@ -143,6 +144,10 @@ static std::string bootstrap_python() {
             } catch (...) {}
         }
     }
+#else
+    std::cerr << "Evoker C++ client was compiled without OpenSSL. Cannot bootstrap Python from GitHub." << std::endl;
+    return "";
+#endif
     
     if (download_url.empty()) {
         std::cerr << "Failed to find latest python release via GitHub API" << std::endl;
