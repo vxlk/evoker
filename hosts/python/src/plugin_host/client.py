@@ -196,8 +196,18 @@ class PluginClient:
             self._check_worker()
             return self.proxy.scan()
         
-    def run_action(self, plugin_name: str, action_name: str, kwargs: dict):
-        """Runs a plugin action. Note: PluginClient serialises calls, so a slow plugin will block the calling thread."""
+    def run_action(self, plugin_name: str, action_name: str, kwargs: dict) -> any:
+        """
+        Executes a plugin action.
+        
+        Note: You must call `get_plugins` (scan) before calling this method,
+        otherwise the host will reject the invocation with "Plugin not found or not loaded".
+        
+        Note: This is a synchronous blocking call over XML-RPC.
+        It will serialize calls across the worker, meaning that
+        a slow plugin action will block the caller and any other
+        clients sharing the worker.
+        """
         with self.lock:
             self._check_worker()
             try:
