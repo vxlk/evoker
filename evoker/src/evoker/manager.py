@@ -168,12 +168,25 @@ class PluginManager:
         for name, func in inspect.getmembers(module, inspect.isfunction):
             if name.startswith("_"):
                 continue
+            if inspect.iscoroutinefunction(func):
+                logger.warning(f"Action '{name}' in plugin '{module.__name__}' was skipped because async functions are not supported.")
+                continue
             original_func = inspect.unwrap(func)
             if getattr(original_func, '__module__', None) != module.__name__:
                 logger.debug(f"Action '{name}' in plugin '{module.__name__}' was filtered out because it belongs to module '{getattr(original_func, '__module__', None)}'")
                 continue
 
             sig = inspect.signature(func)
+            
+            has_positional_only = False
+            for param in sig.parameters.values():
+                if param.kind == inspect.Parameter.POSITIONAL_ONLY:
+                    has_positional_only = True
+                    break
+            
+            if has_positional_only:
+                logger.warning(f"Action '{name}' in plugin '{module.__name__}' was skipped because positional-only parameters are not supported.")
+                continue
             
             # Serialize signature info
             sig_info = {"parameters": {}}

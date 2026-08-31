@@ -1,11 +1,13 @@
-EV-52MediumPython
-scan() stats the entire plugin virtualenv on every call
-worker.py:74 — for f in plugin_dir.rglob("*.py")
-_get_plugin_mtime walks the plugin directory recursively, and the plugin's own .venv lives inside it. For the shipped example that is 501 Python files inside a 1936-entry tree, giving a 45 ms cache-hit cost for a single plugin. With a handful of plugins carrying real dependency trees — pandas, torch — this becomes seconds per scan, all of it stat calls on files that can never be plugin source.
-Fix Prune .venv, wheels, __pycache__ and dotted directories from the walk. A plugin's own sources are what the cache key is for.
-EV-53MediumPython
-stop_worker() leaves a live proxy, so the documented error contract does not hold
-client.py:173–191 — self.proxy is never cleared
-after a normal stop_worker(): FAIL get_plugins() raises WorkerDiedError | raised ConnectionRefusedError instead: [WinError 10061]
-stop_worker sets worker_process = None, which makes _check_worker a no-op, but leaves self.proxy pointing at a dead socket. The next call therefore surfaces a raw ConnectionRefusedError rather than WorkerDiedError. The same seam shows up on the crash path: the call during which the worker dies raises ValueError: RPC Serialization or Connection Error, and only the call after that raises WorkerDiedError. A host writing except WorkerDiedError: restart() will miss both cases.
-Fix Clear self.proxy in stop_worker and have _check_worker raise when the proxy is absent. Wrap 
+EV-58MediumPython
+Failed coercion silently hands the plugin a value of the wrong declared type
+worker.py:145–146 — except (ValueError, TypeError): pass # Let the plugin handle the error
+action: def echo_int(v: int) -> int call: invoke("echo_int", {"v": "notanint"}) result: 'notanint' (a str, delivered to a parameter declared int, no error)
+The coercion layer exists precisely because native hosts cannot always express Python types, so a host is entitled to trust that a parameter the manifest calls int arrives as an int. When the conversion fails the value is passed through unchanged and the plugin — which may well not type-check — proceeds on a string. The comment says "let the plugin handle the error", but nothing tells the plugin an error occurred.
+Fix Raise a fault naming the parameter, its declared type, and the value received. A host can act on that; a silently wrong type it cannot.
+HShipped binaries & examples
+The executables and example programs are what a new user runs first. Two of them cannot succeed at all.
+EV-59HighRustC++
+Both native CLI binaries fail on every possible invocation
+hosts/rust/src/main.rs:39 · hosts/cpp/src/main.cpp:26 — both call invoke() without scan()
+PluginWorkerRPC.invoke rejects any plugin absent from manager.plugins, and plugins are only loaded by scan(). Both shipped CLIs go straight from start_worker to invoke, so there is no input for which either can succeed:
+$ evoker-host <plugins_dir> test_plugin hello_world '{"name":"CLI"}' INFO:__main_

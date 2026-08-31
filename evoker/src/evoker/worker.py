@@ -147,7 +147,7 @@ class PluginWorkerRPC:
                         if isinstance(v, str): kwargs[k] = v.lower() in ("true", "1", "yes")
                         else: kwargs[k] = bool(v)
                 except (ValueError, TypeError):
-                    pass # Let the plugin handle the error
+                    raise ValueError(f"Failed to coerce argument '{k}' to type '{t}': {v}")
 
         try:
             return action.func(**kwargs)
