@@ -163,8 +163,12 @@ class PluginClient:
                         
         threading.Thread(target=forward_stdout, daemon=True).start()
             
-        self.proxy = xmlrpc.client.ServerProxy(f"http://127.0.0.1:{port}", headers=(("X-Evoker-Auth", self.auth_token),))
-
+        self.proxy = xmlrpc.client.ServerProxy(
+            f"http://127.0.0.1:{port}", 
+            headers=(("X-Evoker-Auth", self.auth_token),),
+            allow_none=True,
+            use_builtin_types=True
+        )
         
     def stop_worker(self):
         if self.worker_process:
