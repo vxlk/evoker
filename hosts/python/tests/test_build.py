@@ -12,12 +12,16 @@ def test_pyinstaller_build_and_run(tmp_path):
        and automatically build wheels for the hello_world plugin.
     3. The host can communicate with the worker via XML-RPC and Arrow IPC.
     """
-    # 1. Clean any existing wheels in the examples to ensure it auto-builds them
+    # 1. Clean any existing wheels or .venv in the examples to ensure it auto-builds them
     python_host_dir = Path(__file__).parent.parent
-    wheels_dir = python_host_dir / "examples" / "plugins" / "hello_world_plugin" / "wheels"
+    hw_plugin_dir = python_host_dir / "examples" / "plugins" / "hello_world_plugin"
+    wheels_dir = hw_plugin_dir / "wheels"
+    venv_dir = hw_plugin_dir / ".venv"
+    import shutil
     if wheels_dir.exists():
-        import shutil
         shutil.rmtree(wheels_dir)
+    if venv_dir.exists():
+        shutil.rmtree(venv_dir)
 
     # 2. Run the build (using python dev.py build-release)
     print("Building PyInstaller release bundle...")

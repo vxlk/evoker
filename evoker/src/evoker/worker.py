@@ -8,15 +8,16 @@ import socketserver
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from pathlib import Path
 
+_AUTH_TOKEN = os.environ.pop("EVOKER_AUTH_TOKEN", None)
+
 class AuthXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
     def parse_request(self):
         if super().parse_request():
-            expected_token = os.environ.get("EVOKER_AUTH_TOKEN")
-            if not expected_token:
+            if not _AUTH_TOKEN:
                 self.send_error(500, "Worker improperly configured (missing auth token)")
                 return False
             auth_token = self.headers.get("X-Evoker-Auth")
-            if auth_token != expected_token:
+            if auth_token != _AUTH_TOKEN:
                 self.send_error(401, "Unauthorized")
                 return False
             return True

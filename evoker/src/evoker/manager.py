@@ -102,8 +102,10 @@ class PluginManager:
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
         
+        path_insertions = []
         # Inject to path for local imports within the plugin
         sys.path.insert(0, str(plugin_dir))
+        path_insertions.append(str(plugin_dir))
         
         # Inject the newly created .venv site-packages into sys.path
         # so the plugin can import the dependencies just installed by installer.py.
@@ -116,9 +118,9 @@ class PluginManager:
                 site_packages = None
                 lib_dir = venv_dir / "lib"
                 if lib_dir.exists():
-                    for item in lib_dir.iterdir():
-                        if item.is_dir() and item.name.startswith("python"):
-                            site_packages = item / "site-packages"
+                    for d in lib_dir.iterdir():
+                        if d.is_dir() and d.name.startswith("python"):
+                            site_packages = d / "site-packages"
                             break
             
             if site_packages and site_packages.exists():
@@ -133,13 +135,6 @@ class PluginManager:
                             if hasattr(mod, '__file__') and mod.__file__ and str(site_packages) not in mod.__file__:
                                 try:
                                     loaded_version = importlib.metadata.version(pkg_name)
-                                    plugin_version = None
-                                    for dist in importlib.metadata.distributions(path=[str(site_packages)]):
-                                        if dist.name.replace("-", "_").lower() == pkg_name.lower():
-                                            plugin_version = dist.version
-                                            break
-                                    if plugin_version and loaded_version and plugin_version == loaded_version:
-                                        continue
                                 except Exception:
                                     pass
                                 logger.error(f"Plugin {plugin_dir.name} dependency collision: '{pkg_name}' already loaded from {mod.__file__}")
@@ -147,6 +142,7 @@ class PluginManager:
                                 return None
                     
                     sys.path.insert(1, str(site_packages))
+                    path_insertions.append(str(site_packages))
                     
         try:
             spec.loader.exec_module(module)
@@ -155,7 +151,9 @@ class PluginManager:
             sys.modules.pop(module_name, None)
             return None
         finally:
-            sys.path.pop(0)
+            for p in path_insertions:
+                if p in sys.path:
+                    sys.path.remove(p)
 
         actions = self._introspect_module(module)
         self.plugins[plugin_dir.name] = {

@@ -10,7 +10,8 @@ use xmlrpc::{Request, Value, Transport};
 struct EvokerTransport(reqwest::blocking::RequestBuilder);
 
 impl Transport for EvokerTransport {
-    fn transmit(self, req: &Request) -> Result<Box<dyn std::io::Read + Send>, Box<dyn std::error::Error + Send + Sync>> {
+    type Stream = Box<dyn std::io::Read + Send>;
+    fn transmit(self, req: &Request) -> Result<Self::Stream, Box<dyn std::error::Error + Send + Sync>> {
         let mut buf = Vec::new();
         req.write_as_xml(&mut buf)?;
         
@@ -255,27 +256,24 @@ impl PluginClient {
             None => bootstrap_python()?
         };
 
-        let mut cmd = Command::new(actual_python);
-        if let Ok(exe_path) = std::env::current_exe() {
-            if let Some(parent) = exe_path.parent() {
-                if let Some(existing) = std::env::var_os("PYTHONPATH") {
-                    let mut paths = std::env::split_paths(&existing).collect::<Vec<_>>();
-                    paths.push(parent.to_path_buf());
-                    if let Ok(new_env) = std::env::join_paths(paths) {
-                        cmd.env("PYTHONPATH", new_env);
-                    }
-                } else {
-                    cmd.env("PYTHONPATH", parent);
+        let mut actual_worker_target = worker_target.to_string();
+        if !actual_worker_target.ends_with(".py") {
+            let out = Command::new(&actual_python)
+                .args(&["-c", &format!("import importlib.util, sys; spec = importlib.util.find_spec('{}'); sys.stdout.write(spec.origin if spec else '')", worker_target)])
+                .output()
+                .map_err(|e| format!("Failed to resolve module path: {}", e))?;
+                
+            if out.status.success() {
+                let resolved = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                if !resolved.is_empty() {
+                    actual_worker_target = resolved;
                 }
             }
         }
+
+        let mut cmd = Command::new(&actual_python);
         cmd.arg("-u"); // unbuffered
-        
-        if worker_target.ends_with(".py") {
-            cmd.arg(worker_target);
-        } else {
-            cmd.arg("-m").arg(worker_target);
-        }
+        cmd.arg(&actual_worker_target);
         cmd.env("EVOKER_AUTH_TOKEN", &self.token);
         
         cmd.arg(self.plugins_dir.to_str().unwrap());

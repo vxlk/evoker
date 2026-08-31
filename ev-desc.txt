@@ -1,12 +1,11 @@
-EV-42MediumAll
-Carriage returns are silently rewritten to newlines in every host
-XML 1.0 §2.11 line-ending normalisation, unmitigated in all four clients
-XML parsers normalise \r\n and lone \r to \n unless the character is escaped as &#13;. No Evoker client escapes it, so any string containing a carriage return arrives changed. Windows text files, HTTP headers, clipboard payloads and CSV fragments all carry \r\n.
-Python host 'a\r\nb' -> 'a\nb' *** CHANGED *** C++ host plugin repr() = 'a\nb' (sent 'a\rb') Rust host plugin repr() = 'a\nb' (sent 'a\rb') control 'a\nb', 'a\tb', 'café 中文 😀', 'a&<>"\'b' all round-trip intact
-Unicode is otherwise clean — emoji, CJK, combining accents and regional-indicator pairs all survive unchanged, in every binding. The corruption is specific to \r.
-Fix Escape \r as &#13; in each client's serialiser (a one-line addition to xmlrpc_escape in C++), and note the behaviour in the wire-contract documentation.
-EV-43MediumAll
-The same control character produces three different behaviours across four bindings
-evoker_client.cpp:29–33 throws; Python and Rust do not validate
-Characters below 0x20 other than tab/LF/CR are illegal in XML 1.0. Only the C++ client checks:
-C++ / C std::invalid_argument: "Control characters are not allowed in XML-RPC strings" (clear, client-side, before any I/O) Python Fault: xml.parsers.expat.ExpatError: not well-formed (invalid token): line 15, column 16 (server-side, after a round trip, cause not named) Rust RPC error: ExpatErr
+EV-46MediumPythonDocs
+Plugin site-packages are inserted into sys.path and never removed
+manager.py:149 inserts at index 1; only index 0 is popped at :158
+load_plugin pushes the plugin directory at index 0 and its venv's site-packages at index 1, then pops only index 0 in the finally. Every plugin's dependencies therefore accumulate permanently on the worker's path, visible to every plugin loaded afterwards. The architecture guide states the opposite: "sys.path.pop(0) cleans up the plugin directory from the search path to prevent namespace collisions between distinct plugins."
+The collision detector added last round only catches packages that are already imported from a different location — it cannot see a merely-installed package, so plugin B silently inherits plugin A's dependency tree whenever B has not imported the name itself. There is also a smaller ordering hazard: if a plugin mutates sys.path[0] during exec_module, the pop(0) removes the wrong entry.
+Fix Record the exact strings inserted and remove those specific entries in the finally, or accept the accumulation deliberately and correct the documentation. Popping by value rather than by index also fixes the ordering hazard.
+EV-47MediumPythonC++
+The worker imports from the host application's working directory
+client.py:118 -m plugin_host.worker · evoker_client.cpp:220 appends "." to PYTHONPATH
+worker sys.path[0:2] = ['C:\\Users\\small\\Desktop\\projects\\Evoker', <- host CWD 'C:\\...\\hosts\\python\\src']
+python -m pre

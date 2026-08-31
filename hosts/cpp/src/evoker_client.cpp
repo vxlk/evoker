@@ -241,18 +241,32 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
         }
     }
 
+    std::string actual_worker_script = worker_script;
+    if (actual_worker_script.size() < 3 || actual_worker_script.substr(actual_worker_script.size() - 3) != ".py") {
+        reproc::process proc;
+        reproc::options path_opts;
+        path_opts.redirect.out.type = reproc::redirect::pipe;
+        std::string script = "import importlib.util, sys; spec = importlib.util.find_spec('" + worker_script + "'); sys.stdout.write(spec.origin if spec else '')";
+        std::vector<std::string> path_args = {actual_python, "-c", script};
+        if (!proc.start(path_args, path_opts)) {
+            std::string out;
+            reproc::sink::string sink(out);
+            reproc::drain(proc, sink, reproc::sink::null);
+            proc.wait(reproc::infinite);
+            
+            // Trim whitespace
+            out.erase(out.find_last_not_of(" \n\r\t") + 1);
+            if (!out.empty()) {
+                actual_worker_script = out;
+            }
+        }
+    }
+
     reproc::options options;
     options.redirect.err.type = reproc::redirect::pipe;
     options.redirect.out.type = reproc::redirect::pipe;
     
-    std::vector<std::string> args = {actual_python, "-u"};
-    if (worker_script.size() >= 3 && worker_script.substr(worker_script.size() - 3) == ".py") {
-        args.push_back(worker_script);
-    } else {
-        args.push_back("-m");
-        args.push_back(worker_script);
-    }
-    args.push_back(m_plugins_dir);
+    std::vector<std::string> args = {actual_python, "-u", actual_worker_script, m_plugins_dir};
     
     // Set environment variables
     std::map<std::string, std::string> env;
@@ -266,13 +280,7 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
         env["EVOKER_INJECTED_PACKAGES"] = j.dump();
     }
     env["EVOKER_AUTH_TOKEN"] = m_token;
-    const char* ppath = getenv("PYTHONPATH");
-    std::string new_ppath = ppath ? std::string(ppath) : "";
-#ifdef _WIN32
-    env["PYTHONPATH"] = new_ppath.empty() ? "." : new_ppath + ";.";
-#else
-    env["PYTHONPATH"] = new_ppath.empty() ? "." : new_ppath + ":.";
-#endif
+    
     if (!env.empty()) {
         options.env.extra = reproc::env(env);
     }

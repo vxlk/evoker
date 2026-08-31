@@ -122,8 +122,8 @@ class PluginClient:
             # instead of running the main host app again (which would cause an infinite hang).
             cmd = [str(python_exe), "--evoker-worker", str(worker_script), str(self.plugins_dir)]
         else:
-            # When using an external Python interpreter (.venv), it natively supports running modules
-            cmd = [str(python_exe), "-u", "-m", "evoker.worker", str(self.plugins_dir)]
+            # When using an external Python interpreter (.venv), run the script directly by path
+            cmd = [str(python_exe), "-u", str(worker_script), str(self.plugins_dir)]
 
         self.worker_process = subprocess.Popen(
             cmd,
