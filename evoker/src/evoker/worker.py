@@ -72,8 +72,11 @@ class PluginWorkerRPC:
 
     def _get_plugin_mtime(self, plugin_dir: Path) -> float:
         mtime = plugin_dir.stat().st_mtime
-        for f in plugin_dir.rglob("*.py"):
-            mtime = max(mtime, f.stat().st_mtime)
+        for root, dirs, files in os.walk(plugin_dir):
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('wheels', '__pycache__')]
+            for f in files:
+                if f.endswith('.py'):
+                    mtime = max(mtime, (Path(root) / f).stat().st_mtime)
         manifest = plugin_dir / "manifest.json"
         if manifest.exists():
             mtime = max(mtime, manifest.stat().st_mtime)

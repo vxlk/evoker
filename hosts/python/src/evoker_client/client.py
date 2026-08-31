@@ -187,6 +187,7 @@ class PluginClient:
                 self.worker_process.kill()
                 self.worker_process.wait()
             self.worker_process = None
+        self.proxy = None
             
     def restart_worker(self):
         self.stop_worker()
@@ -196,13 +197,20 @@ class PluginClient:
         if self.worker_process and self.worker_process.poll() is not None:
             rc = self.worker_process.returncode
             self.worker_process = None
+            self.proxy = None
             raise WorkerDiedError(f"Worker process died unexpectedly (exit code {rc})")
+        if not self.proxy:
+            raise WorkerDiedError("Worker is stopped")
 
     def get_plugins(self):
         """Scans for plugins. Note: PluginClient serialises calls, blocking the calling thread."""
         with self.lock:
             self._check_worker()
-            return self.proxy.scan()
+            try:
+                return self.proxy.scan()
+            except OSError as e:
+                self.stop_worker()
+                raise WorkerDiedError(f"Worker connection error: {e}")
         
     def run_action(self, plugin_name: str, action_name: str, kwargs: dict) -> any:
         """
@@ -222,5 +230,8 @@ class PluginClient:
                 return self.proxy.invoke(plugin_name, action_name, kwargs)
             except xmlrpc.client.Fault:
                 raise
+            except OSError as e:
+                self.stop_worker()
+                raise WorkerDiedError(f"Worker connection error: {e}")
             except Exception as e:
                 raise ValueError(f"RPC Serialization or Connection Error: {e}")

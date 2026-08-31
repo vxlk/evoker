@@ -32,15 +32,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut client = PluginClient::new(plugins_dir, None, None);
     
     if let Err(e) = client.start_worker(Some("python"), "evoker.worker") {
-        eprintln!("Failed to start worker: {}", e);
-        std::process::exit(1);
+        return Err(format!("Failed to start worker: {}", e).into());
     }
     
     match client.invoke(plugin_name, action, kwargs) {
         Ok(res) => println!("{:?}", res),
         Err(e) => {
-            eprintln!("Error: {}", e);
-            std::process::exit(1);
+            return Err(format!("Error: {}", e).into());
         }
     }
     
