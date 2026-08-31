@@ -67,12 +67,21 @@ class PluginWorkerRPC:
         self.actions_manifest = {}
         self.plugins_mtimes = {}
 
+    def _get_plugin_mtime(self, plugin_dir: Path) -> float:
+        mtime = plugin_dir.stat().st_mtime
+        for f in plugin_dir.rglob("*.py"):
+            mtime = max(mtime, f.stat().st_mtime)
+        manifest = plugin_dir / "manifest.json"
+        if manifest.exists():
+            mtime = max(mtime, manifest.stat().st_mtime)
+        return mtime
+
     def reload_plugin(self, plugin_name: str) -> bool:
         plugin_dir = self.plugins_dir / plugin_name
         if plugin_dir.exists() and plugin_dir.is_dir():
             actions = self.manager.load_plugin(plugin_dir)
             if actions is not None:
-                self.plugins_mtimes[plugin_name] = plugin_dir.stat().st_mtime
+                self.plugins_mtimes[plugin_name] = self._get_plugin_mtime(plugin_dir)
                 return True
         return False
 
@@ -86,7 +95,7 @@ class PluginWorkerRPC:
             if not item.is_dir():
                 continue
                 
-            mtime = item.stat().st_mtime
+            mtime = self._get_plugin_mtime(item)
             if item.name in self.manager.plugins and self.plugins_mtimes.get(item.name) == mtime:
                 actions = self.manager.plugins[item.name]["actions"]
             else:
