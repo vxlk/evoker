@@ -20,7 +20,7 @@ if not is_frozen:
 if str(host_api_dir.parent) not in sys.path:
     sys.path.insert(0, str(host_api_dir.parent))
 
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 from host_api.arrow_ipc import write_table_to_mmap, read_table_from_mmap, cleanup_mmap
 
 def print_separator(title: str):

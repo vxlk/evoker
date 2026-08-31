@@ -12,7 +12,7 @@ fn main() {
     unsafe {
         env::set_var("PYTHONPATH", src_dir);
     }
-    let worker_script = "plugin_host.worker";
+    let worker_script = "evoker.worker";
 
     let mut client = PluginClient::new(&plugins_dir, None, None);
     

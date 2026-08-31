@@ -44,7 +44,7 @@ When initializing `PluginClient`, you can pass a list of filesystem paths via th
 ```python
 from pathlib import Path
 import sys
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 host_api_dir = Path(__file__).parent / "host_api"
 host_site_packages = Path(sys.prefix) / "Lib" / "site-packages"
@@ -181,7 +181,7 @@ def process_batch(batch_id: int, items_count: int) -> dict:
 
 ```python
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 base_dir = Path(__file__).parent
 host_api_parent = base_dir  # base_dir contains the host_api/ folder
@@ -216,7 +216,7 @@ In many applications, the host environment already has heavy packages installed 
 import sys
 import os
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 def get_host_site_packages() -> Path:
     prefix = Path(sys.prefix)

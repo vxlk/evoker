@@ -91,7 +91,7 @@ When instantiating `PluginClient`, provide the `strategies` list:
 
 ```python
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 client = PluginClient(
     plugins_dir=Path("plugins"),
@@ -131,7 +131,7 @@ The following example demonstrates how a host application uses strategies to dis
 ```python
 import sys
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 def main():
     client = PluginClient(
@@ -208,7 +208,7 @@ Here is an example strategy that matches functions matching a regex pattern and 
 ```python
 import re
 from typing import Dict, Any, Optional
-from plugin_host.manager import PluginStrategy
+from evoker.manager import PluginStrategy
 
 class RegexMatchStrategy(PluginStrategy):
     def __init__(self, pattern: str):

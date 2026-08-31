@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut client = PluginClient::new(plugins_dir, None, None);
     
-    if let Err(e) = client.start_worker(Some("python"), "plugin_host.worker") {
+    if let Err(e) = client.start_worker(Some("python"), "evoker.worker") {
         eprintln!("Failed to start worker: {}", e);
         std::process::exit(1);
     }

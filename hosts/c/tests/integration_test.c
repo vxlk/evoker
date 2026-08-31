@@ -8,7 +8,7 @@ int main() {
     // Relative paths from build directory (hosts/c/build)
     const char* plugins_dir = "../../test_assets/plugins";
     const char* src_dir = "../../python/src";
-    const char* worker_script = "plugin_host.worker";
+    const char* worker_script = "evoker.worker";
 
     // Try alternate path if it doesn't exist (if run from root or hosts/c)
     FILE* f = fopen("../../test_assets/plugins/test_plugin/manifest.json", "r");

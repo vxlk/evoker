@@ -5,7 +5,7 @@
 int main() {
     const char* plugins_dir = "../../test_assets/plugins";
     const char* src_dir = "../../python/src";
-    const char* worker_script = "plugin_host.worker";
+    const char* worker_script = "evoker.worker";
     
 #ifdef _WIN32
     _putenv_s("PYTHONPATH", src_dir);

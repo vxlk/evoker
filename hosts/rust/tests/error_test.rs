@@ -12,7 +12,7 @@ fn test_invalid_python_exe() {
     let mut client = PluginClient::new(&plugins_dir, None, None);
     
     // Pass a non-existent executable
-    let result = client.start_worker(Some("this_python_does_not_exist_12345"), "plugin_host.worker");
+    let result = client.start_worker(Some("this_python_does_not_exist_12345"), "evoker.worker");
     assert!(result.is_err(), "Expected an error when using invalid python exe");
 }
 

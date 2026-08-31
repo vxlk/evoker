@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
-from plugin_host.installer import install_plugin_deps, DependencyInstallError
-from plugin_host.manager import PluginManager
+from evoker.installer import install_plugin_deps, DependencyInstallError
+from evoker.manager import PluginManager
 import sys
 
 def test_no_requirements(temp_plugins_dir):

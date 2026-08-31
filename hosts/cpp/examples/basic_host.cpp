@@ -6,7 +6,7 @@ int main() {
     std::filesystem::path current = std::filesystem::current_path();
     std::filesystem::path plugins_dir = current / ".." / ".." / "test_assets" / "plugins";
     std::filesystem::path src_dir = current / ".." / ".." / "python" / "src";
-    std::string worker_script = "plugin_host.worker";
+    std::string worker_script = "evoker.worker";
 
     if (!std::filesystem::exists(plugins_dir)) {
         plugins_dir = current / ".." / "test_assets" / "plugins";

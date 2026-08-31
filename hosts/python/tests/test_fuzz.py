@@ -1,7 +1,7 @@
 import pytest
 import types
 from hypothesis import given, settings, HealthCheck, strategies as st
-from plugin_host.manager import PluginManager, PrefixStrategy
+from evoker.manager import PluginManager, PrefixStrategy
 
 def make_dummy_module(code: str):
     mod = types.ModuleType("dummy_plugin")
@@ -87,9 +87,11 @@ def test_fuzz_prefix_strategy_matching(prefix, random_suffix):
     assert match["menu_name"] == random_suffix
     
     # 2. Rejection
-    # If we prepend a character (and prefix is not empty), it should fail to match
+    # If we prepend a character that differs from the first character of the prefix,
+    # it should fail to match
     if prefix:
-        invalid_name = "X" + prefix + random_suffix
+        prepended_char = "Y" if prefix[0] == "X" else "X"
+        invalid_name = prepended_char + prefix + random_suffix
         assert strategy.match(invalid_name, sig_info) is None
 
 @given(st.text(), st.text())
@@ -111,7 +113,7 @@ def test_fuzz_injected_packages_env(env_val):
     """
     Ensures arbitrary env inputs don't crash injected packages logic.
     """
-    from plugin_host.worker import parse_injected_packages
+    from evoker.worker import parse_injected_packages
     try:
         parse_injected_packages(env_val)
     except Exception as e:
@@ -122,7 +124,7 @@ def test_fuzz_strategies_env(env_val):
     """
     Ensures arbitrary env inputs don't crash strategy parsing logic.
     """
-    from plugin_host.worker import parse_strategies
+    from evoker.worker import parse_strategies
     try:
         parse_strategies(env_val)
     except Exception as e:
@@ -135,7 +137,7 @@ def test_fuzz_rpc_serialization(temp_plugins_dir, kwargs_payload):
     Ensure the RPC client gracefully raises xmlrpc Faults on arbitrary kwargs,
     rather than causing hangs or hard crashes.
     """
-    from plugin_host.client import PluginClient
+    from evoker_client.client import PluginClient
     import xmlrpc.client
     
     plugin_dir = temp_plugins_dir / "rpc_plugin"

@@ -1,6 +1,6 @@
 import pytest
 import shutil
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 def test_custom_api_injection(temp_plugins_dir, tmp_path):
     # 1. Create a fake "host_api" directory that the host wants to inject

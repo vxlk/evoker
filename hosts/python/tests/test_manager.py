@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 import pytest
-from plugin_host.manager import PluginManager, PrefixStrategy
+from evoker.manager import PluginManager, PrefixStrategy
 
 def create_plugin(base_dir, name, manifest_content=None, init_content=None):
     plugin_dir = base_dir / name

@@ -1,6 +1,6 @@
 import tempfile
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 def test_quick_start_snippets():
     with tempfile.TemporaryDirectory() as td:

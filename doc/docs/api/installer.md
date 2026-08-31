@@ -6,10 +6,10 @@ sidebar_label: 'Installer'
 
 # Installer
 
-The `plugin_host.installer` module provides automated dependency isolation and offline wheel caching for plugins. It inspects plugin manifests and `requirements.txt` files, creates dedicated virtual environments (`.venv`), automatically pre-builds wheels for offline resilience, and installs packages without polluting the host environment.
+The `evoker.installer` module provides automated dependency isolation and offline wheel caching for plugins. It inspects plugin manifests and `requirements.txt` files, creates dedicated virtual environments (`.venv`), automatically pre-builds wheels for offline resilience, and installs packages without polluting the host environment.
 
 ```python
-from plugin_host.installer import (
+from evoker.installer import (
     install_plugin_deps,
     DependencyInstallError,
     _get_bundled_python,
@@ -80,7 +80,7 @@ Main entry point for plugin dependency resolution and environment setup.
 #### Step-by-Step Resolution Process
 
 1. **Check Requirements**: Inspects `plugin_path / "requirements.txt"`. If the file does not exist, returns `True` immediately.
-2. **Resolve Base Interpreter**: Invokes `_get_bundled_python()`. If a standalone bundled interpreter exists in `plugin_host/pythons/`, it is selected as `base_python_exe`. Otherwise, falls back to the host interpreter (`sys.executable`).
+2. **Resolve Base Interpreter**: Invokes `_get_bundled_python()`. If a standalone bundled interpreter exists in `evoker/pythons/`, it is selected as `base_python_exe`. Otherwise, falls back to the host interpreter (`sys.executable`).
 3. **Initialize Virtual Environment**: If `plugin_path / ".venv"` does not exist, runs `[base_python_exe, "-m", "venv", str(venv_dir)]`.
 4. **Locate Virtualenv Interpreter**:
    - **Windows**: `plugin_path / ".venv" / "Scripts" / "python.exe"`
@@ -109,11 +109,11 @@ Main entry point for plugin dependency resolution and environment setup.
 def _get_bundled_python() -> Path | None
 ```
 
-Scans the internal `plugin_host/pythons/` distribution directory for a standalone Python interpreter.
+Scans the internal `evoker/pythons/` distribution directory for a standalone Python interpreter.
 
 #### Search Logic
 
-- Checks `plugin_host/pythons/`.
+- Checks `evoker/pythons/`.
 - Walks the directory tree looking for:
   - Windows: `python.exe`
   - POSIX: `python3` located within a `bin/` directory component.
@@ -125,7 +125,7 @@ Scans the internal `plugin_host/pythons/` distribution directory for a standalon
 
 ```python
 from pathlib import Path
-from plugin_host.installer import install_plugin_deps, DependencyInstallError
+from evoker.installer import install_plugin_deps, DependencyInstallError
 
 plugin_dir = Path("./plugins/data_analysis")
 

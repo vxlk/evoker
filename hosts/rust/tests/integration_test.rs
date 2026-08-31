@@ -11,14 +11,14 @@ fn test_plugin_client() {
     manifest_dir.pop(); // root
     let plugins_dir = manifest_dir.join("hosts").join("test_assets").join("plugins");
     
-    // Set PYTHONPATH so python can find plugin_host
+    // Set PYTHONPATH so python can find evoker
     let src_dir = manifest_dir.join("hosts").join("python").join("src");
     unsafe {
         env::set_var("PYTHONPATH", src_dir);
     }
     
     // Check if python is available
-    let worker_script = "plugin_host.worker";
+    let worker_script = "evoker.worker";
 
     let mut client = PluginClient::new(&plugins_dir, None, None);
     

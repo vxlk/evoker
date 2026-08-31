@@ -96,7 +96,7 @@ The host initializes a `PluginClient` by providing the directory of plugins, an 
 
 ```python
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 client = PluginClient(
     plugins_dir=Path("./plugins"),
@@ -113,7 +113,7 @@ client.start_worker()
 When running inside frozen executables (such as PyInstaller bundles), embedded runtime variables (`PYTHONPATH`, `PYTHONHOME`, `PATH`) can corrupt isolated external Python interpreters. `PluginClient` sanitizes the environment before spawning the child process:
 - Checks for `ORIG_PYTHONPATH`, `ORIG_PYTHONHOME`, and `ORIG_PATH`.
 - Restores original host variables or unsets modified variables.
-- Sets `PYTHONPATH` to point to the raw `plugin_host` source (or the extracted `plugin_host_src` inside `sys._MEIPASS`).
+- Sets `PYTHONPATH` to point to the raw `evoker` source (or the extracted `evoker_src` inside `sys._MEIPASS`).
 
 ### 3. Strategy and Package Serialization
 The client serializes configuration data into JSON environment variables:
@@ -129,7 +129,7 @@ The client resolves the target Python executable following the 3-tier hierarchy:
 The client spawns the worker using `subprocess.Popen`:
 
 ```python
-cmd = [str(python_exe), "-u", "-m", "plugin_host.worker", str(self.plugins_dir)]
+cmd = [str(python_exe), "-u", "-m", "evoker.worker", str(self.plugins_dir)]
 self.worker_process = subprocess.Popen(
     cmd,
     stdout=subprocess.PIPE,
@@ -182,7 +182,7 @@ The plugin directory must contain:
 If either file is missing or corrupt, `PluginManager` logs a warning and skips the directory.
 
 ### Step 2: Dependency Resolution & Wheel Caching (`install_plugin_deps`)
-If the plugin contains a `requirements.txt` file, `plugin_host.installer` manages dependencies:
+If the plugin contains a `requirements.txt` file, `evoker.installer` manages dependencies:
 1. **Virtualenv Creation**: Creates a dedicated `.venv` in the plugin directory if it does not already exist.
 2. **Offline Wheels Caching**:
    - Checks the `<plugin_dir>/wheels/` directory.
@@ -303,7 +303,7 @@ def stop_worker(self):
 
 ```python
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 def main():
     plugins_path = Path("./plugins")

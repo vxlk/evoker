@@ -13,10 +13,10 @@ if len(sys.argv) >= 3 and sys.argv[1] == '--evoker-worker':
     
     # Remove --evoker-worker so the worker script doesn't see it
     # We drop the first 3 args: host.exe, --evoker-worker, worker_script_path
-    sys.argv = ["plugin_host.worker"] + sys.argv[3:]
+    sys.argv = ["evoker.worker"] + sys.argv[3:]
     
     # Execute the worker module directly from the PyInstaller embedded PYZ archive
-    runpy.run_module("plugin_host.worker", run_name="__main__")
+    runpy.run_module("evoker.worker", run_name="__main__")
     
     # Exit after the worker finishes to prevent host.py from running its logic
     sys.exit(0)

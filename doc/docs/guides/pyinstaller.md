@@ -27,24 +27,24 @@ In One-Dir mode, the application sits in a permanent folder (e.g. `dist/host/`),
 
 ## 2. Built-in PyInstaller Hooks
 
-When `evoker_plugin_host` is installed in your development environment, it automatically registers PyInstaller hooks via the `pyinstaller40` entry point in `setup.py`:
+When `evoker_evoker` is installed in your development environment, it automatically registers PyInstaller hooks via the `pyinstaller40` entry point in `setup.py`:
 
 ```python
 entry_points={
     'pyinstaller40': [
-        'hook-dirs = plugin_host._pyinstaller:get_hook_dirs',
+        'hook-dirs = evoker_client._pyinstaller:get_hook_dirs',
     ]
 }
 ```
 
-### What the Hook (`hook-plugin_host.py`) Does Automatically:
+### What the Hook (`hook-evoker.py`) Does Automatically:
 
-1. **Bundles Raw Source Code (`_internal/plugin_host_src/`)**:
-   PyInstaller compiles all Python modules into a closed `PYZ` archive. However, if a plugin creates an external `.venv`, that external Python interpreter cannot inspect inside the frozen PYZ archive. The hook copies the raw `plugin_host` `.py` files to `_internal/plugin_host_src/` so external Python interpreters can import `plugin_host` via `PYTHONPATH`.
+1. **Bundles Raw Source Code (`_internal/evoker_src/`)**:
+   PyInstaller compiles all Python modules into a closed `PYZ` archive. However, if a plugin creates an external `.venv`, that external Python interpreter cannot inspect inside the frozen PYZ archive. The hook copies the raw `evoker` `.py` files to `_internal/evoker_src/` so external Python interpreters can import `evoker` via `PYTHONPATH`.
 2. **Bundles Standalone Python Distributions**:
-   Packages any bundled Python runtimes located in `plugin_host/pythons/` into the distribution directory.
+   Packages any bundled Python runtimes located in `evoker/pythons/` into the distribution directory.
 3. **Registers Hidden Imports**:
-   Explicitly adds `plugin_host.worker` to `hiddenimports` so PyInstaller packages the worker entry point even though it is invoked via subprocess.
+   Explicitly adds `evoker.worker` to `hiddenimports` so PyInstaller packages the worker entry point even though it is invoked via subprocess.
 4. **Deploys Built Documentation**:
    Copies built HTML documentation assets directly into `dist/<app>/plugins/docs`.
 
@@ -64,21 +64,21 @@ sequenceDiagram
     participant Host as Host App (host.exe)
     participant Client as PluginClient
     participant Sub as Worker Subprocess (host.exe)
-    participant Hook as plugin_host/__init__.py
-    participant Worker as plugin_host.worker
+    participant Hook as evoker/__init__.py
+    participant Worker as evoker.worker
 
     Host->>Client: client.start_worker()
     Client->>Sub: Spawns: host.exe --evoker-worker worker.py plugins/
     Note over Sub: host.exe begins booting Python runtime
-    Sub->>Hook: Imports plugin_host package
+    Sub->>Hook: Imports evoker package
     Note over Hook: Detects sys.argv[1] == '--evoker-worker'
-    Hook->>Worker: runpy.run_module('plugin_host.worker', run_name='__main__')
+    Hook->>Worker: runpy.run_module('evoker.worker', run_name='__main__')
     Worker->>Worker: Starts XML-RPC Server & Scans Plugins
     Note over Hook,Worker: Hook calls sys.exit(0) upon worker completion
     Note over Sub: Host main() code is NEVER executed in worker!
 ```
 
-### Interception Implementation (`plugin_host/__init__.py`):
+### Interception Implementation (`evoker/__init__.py`):
 
 ```python
 import sys
@@ -87,10 +87,10 @@ if len(sys.argv) >= 3 and sys.argv[1] == '--evoker-worker':
     import runpy
     
     # Strip --evoker-worker argument
-    sys.argv = ["plugin_host.worker"] + sys.argv[3:]
+    sys.argv = ["evoker.worker"] + sys.argv[3:]
     
     # Run the worker module directly from the embedded PYZ archive
-    runpy.run_module("plugin_host.worker", run_name="__main__")
+    runpy.run_module("evoker.worker", run_name="__main__")
     
     # Exit immediately to prevent host application code from running
     sys.exit(0)
@@ -102,12 +102,12 @@ if len(sys.argv) >= 3 and sys.argv[1] == '--evoker-worker':
 
 Inside a frozen PyInstaller bundle, `__file__` often points to the internal `_internal/` directory or transient extraction path.
 
-Evoker provides a helper function `get_app_dir(__file__)` in `plugin_host.utils` that reliably resolves to the directory containing the `.exe` when frozen, while falling back to standard script parent paths during development:
+Evoker provides a helper function `get_app_dir(__file__)` in `evoker_client.utils` that reliably resolves to the directory containing the `.exe` when frozen, while falling back to standard script parent paths during development:
 
 ```python
 from pathlib import Path
-from plugin_host.utils import get_app_dir
-from plugin_host.client import PluginClient
+from evoker_client.utils import get_app_dir
+from evoker_client.client import PluginClient
 
 # Resolves to the folder containing host.exe when frozen
 base_dir = get_app_dir(__file__)
@@ -136,9 +136,9 @@ a = Analysis(
     pathex=['src'],
     binaries=[],
     datas=[
-        ('src/plugin_host', 'src/plugin_host'),
+        ('src/evoker', 'src/evoker'),
     ],
-    hiddenimports=['plugin_host.worker'],
+    hiddenimports=['evoker.worker'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -220,6 +220,6 @@ Write-Host "You can now run: .\dist\host\host.exe" -ForegroundColor Yellow
 
 - [x] Use **One-Dir mode** (`COLLECT` in `.spec` or `pyinstaller -D`).
 - [x] Use `get_app_dir(__file__)` to reference `plugins` and `host_api` paths.
-- [x] Ensure `evoker_plugin_host` hooks are active (`hiddenimports=['plugin_host.worker']`).
+- [x] Ensure `evoker_evoker` hooks are active (`hiddenimports=['evoker.worker']`).
 - [x] Deploy `plugins/` and `host_api/` folders alongside `host.exe` post-build.
 - [x] Pre-populate `wheels/` in plugin folders for air-gapped environments.

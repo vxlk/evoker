@@ -253,7 +253,7 @@ Here is how the host application discovers and invokes the `text_analyzer` plugi
 
 ```python
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 # 1. Initialize client pointing to plugins
 client = PluginClient(

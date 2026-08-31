@@ -14,7 +14,7 @@ Evoker provides a fully automated, resilient dependency management system that c
 
 ## How Dependency Installation Works
 
-When `PluginManager.load_plugin(plugin_dir)` is called, Evoker inspects the directory for a `requirements.txt` file. If found, `plugin_host.installer` initiates an automated resolution pipeline:
+When `PluginManager.load_plugin(plugin_dir)` is called, Evoker inspects the directory for a `requirements.txt` file. If found, `evoker.installer` initiates an automated resolution pipeline:
 
 ```mermaid
 flowchart TD
@@ -39,7 +39,7 @@ flowchart TD
 
 If a plugin contains `requirements.txt` and has not been initialized:
 1. Evoker locates the target Python interpreter:
-   - **Bundled Standalone Python**: Checks for an embedded standalone Python interpreter in `plugin_host/pythons/`.
+   - **Bundled Standalone Python**: Checks for an embedded standalone Python interpreter in `evoker/pythons/`.
    - **Host Python Fallback**: If no bundled standalone Python is found, falls back to `sys.executable`.
 2. Creates an isolated virtual environment at `<plugin_dir>/.venv`:
    ```bash
@@ -123,7 +123,7 @@ As an alternative to `requirements.txt`, hosts can share their existing `site-pa
 import sys
 import os
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 # Locate host site-packages
 if os.name == "nt":

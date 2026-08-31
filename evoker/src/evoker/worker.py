@@ -25,7 +25,7 @@ class AuthXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
 class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     pass
 
-from plugin_host.manager import PluginManager, PrefixStrategy, ExactMatchStrategy
+from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy
 
 logger = logging.getLogger(__name__)
 

@@ -6,10 +6,10 @@ sidebar_label: 'PluginManager'
 
 # PluginManager
 
-The `plugin_host.manager` module provides in-process plugin management, dynamic module loading, signature introspection, and function classification using declarative strategies.
+The `evoker.manager` module provides in-process plugin management, dynamic module loading, signature introspection, and function classification using declarative strategies.
 
 ```python
-from plugin_host.manager import (
+from evoker.manager import (
     PluginManager,
     PluginStrategy,
     ExactMatchStrategy,
@@ -277,7 +277,7 @@ Inspects public functions defined in the loaded module using Python's `inspect` 
 
 ```python
 from typing import Dict, Any, Optional
-from plugin_host.manager import PluginStrategy, PluginManager
+from evoker.manager import PluginStrategy, PluginManager
 from pathlib import Path
 
 class HookStrategy(PluginStrategy):

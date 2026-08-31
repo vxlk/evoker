@@ -120,7 +120,7 @@ When spawning a worker subprocess, Evoker determines the appropriate Python inte
 graph TD
     Start([Start Worker Launch]) --> Tier1{Check Plugin .venv<br/>plugin_dir/.venv}
     Tier1 -- "Found" --> UseVenv[Use Plugin Virtualenv Python]
-    Tier1 -- "Not Found" --> Tier2{Check Bundled Pythons<br/>plugin_host/pythons/}
+    Tier1 -- "Not Found" --> Tier2{Check Bundled Pythons<br/>evoker/pythons/}
     Tier2 -- "Found" --> UseBundled[Use python-build-standalone Executable]
     Tier2 -- "Not Found" --> Tier3[Fallback to Host Interpreter<br/>sys.executable]
 
@@ -136,7 +136,7 @@ graph TD
    - This ensures plugins with specialized dependencies run inside an isolated virtual environment.
 
 2. **Bundled Standalone Python Distribution**:
-   - If `src/plugin_host/pythons/` contains a portable `python-build-standalone` installation (pre-fetched ahead of time via `scripts/download_pythons.py`), Evoker uses that standalone binary (`python/python.exe` or `python/bin/python3`).
+   - If `src/evoker/pythons/` contains a portable `python-build-standalone` installation (pre-fetched ahead of time via `scripts/download_pythons.py`), Evoker uses that standalone binary (`python/python.exe` or `python/bin/python3`).
    - This allows packaged desktop distributions (e.g., PyInstaller binaries) to run external Python workers without requiring a system-wide Python installation.
 
 3. **Host Interpreter (`sys.executable`)**:
@@ -158,7 +158,7 @@ To enable seamless code execution across process boundaries, Evoker uses a **3-t
 ```mermaid
 flowchart TB
     subgraph Layer1["1. Framework Injection (PYTHONPATH)"]
-        L1_Desc["Host injects plugin_host source location into PYTHONPATH env var.<br/>Worker subprocess can import 'plugin_host' regardless of interpreter location."]
+        L1_Desc["Host injects evoker source location into PYTHONPATH env var.<br/>Worker subprocess can import 'evoker' regardless of interpreter location."]
     end
 
     subgraph Layer2["2. Custom API Injection (EVOKER_INJECTED_PACKAGES)"]
@@ -173,10 +173,10 @@ flowchart TB
 ```
 
 ### 1. Framework Injection (`PYTHONPATH`)
-When the worker runs under an isolated standalone Python or virtual environment, it needs to import the `plugin_host` package. 
+When the worker runs under an isolated standalone Python or virtual environment, it needs to import the `evoker` package. 
 
-- In dynamic/dev mode: `PluginClient` sets `PYTHONPATH` to the parent directory of `plugin_host`.
-- In PyInstaller frozen mode: `PluginClient` sets `PYTHONPATH` to the extracted `plugin_host_src` directory inside `sys._MEIPASS`.
+- In dynamic/dev mode: `PluginClient` sets `PYTHONPATH` to the parent directory of `evoker`.
+- In PyInstaller frozen mode: `PluginClient` sets `PYTHONPATH` to the extracted `evoker_src` directory inside `sys._MEIPASS`.
 
 ### 2. Custom API Injection (`EVOKER_INJECTED_PACKAGES`)
 The Host application may provide domain-specific SDKs or IPC utilities (such as `host_api`) that plugins must be able to import.

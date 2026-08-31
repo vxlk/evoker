@@ -9,7 +9,7 @@ sidebar_label: 'PluginClient'
 `PluginClient` is the primary host-side interface in Evoker for managing and interacting with out-of-process plugin workers. It handles subprocess lifecycle management, environment variable sanitization, interpreter discovery, and XML-RPC communication over local TCP sockets.
 
 ```python
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 ```
 
 ---
@@ -106,7 +106,7 @@ Spawns the worker subprocess, configures process isolation, captures the allocat
    - Plugin-specific virtual environment (`.venv/Scripts/python.exe` or `.venv/bin/python`)
    - Standalone bundled Python (`pythons/python-*/python/python.exe`)
    - Host executable (`sys.executable`)
-4. **Process Launch**: Spawns `plugin_host.worker` with unbuffered I/O (`-u`) via `subprocess.Popen`.
+4. **Process Launch**: Spawns `evoker.worker` with unbuffered I/O (`-u`) via `subprocess.Popen`.
 5. **Port Scraping**: Reads stdout line-by-line within a 5-second timeout window until it captures the `RPC_PORT:<port>` initialization token.
 6. **Stdout Forwarding**: Spawns a background daemon thread to stream subsequent worker stdout to the host application's `sys.stdout`.
 7. **Proxy Initialization**: Instantiates an `xmlrpc.client.ServerProxy` targeting `http://localhost:<port>`.
@@ -202,7 +202,7 @@ Invokes an action exported by a specific plugin within the worker process.
 
 ```python
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 plugins_path = Path("./plugins").resolve()
 
@@ -239,7 +239,7 @@ finally:
 
 ```python
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 client = PluginClient(
     plugins_dir=Path("./plugins"),

@@ -6,7 +6,7 @@ a = Analysis(
     pathex=['src'],
     binaries=[],
     datas=[
-        ('src/plugin_host', 'plugin_host'),
+        ('src/evoker_client', 'evoker_client'),
         ('examples/plugins', 'plugins'),
         ('examples/host_api', 'injected/host_api')
     ],

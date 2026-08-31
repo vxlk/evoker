@@ -6,10 +6,10 @@ sidebar_label: 'Worker'
 
 # Worker
 
-The `plugin_host.worker` module implements the isolated worker process execution environment. It boots an embedded XML-RPC server, manages plugin lifecycle within the isolated process, handles package path injections, and exposes remote procedure call (RPC) endpoints for plugin discovery and invocation.
+The `evoker.worker` module implements the isolated worker process execution environment. It boots an embedded XML-RPC server, manages plugin lifecycle within the isolated process, handles package path injections, and exposes remote procedure call (RPC) endpoints for plugin discovery and invocation.
 
 ```python
-from plugin_host.worker import (
+from evoker.worker import (
     PluginWorkerRPC,
     start_worker,
     parse_injected_packages,
@@ -73,7 +73,7 @@ Parses a JSON-encoded array of filesystem paths from the `EVOKER_INJECTED_PACKAG
 
 #### Auto-execution on Import
 
-`plugin_host.worker` automatically checks and parses `EVOKER_INJECTED_PACKAGES` during module load:
+`evoker.worker` automatically checks and parses `EVOKER_INJECTED_PACKAGES` during module load:
 
 ```python
 if "EVOKER_INJECTED_PACKAGES" in os.environ:
@@ -217,7 +217,7 @@ The worker can be launched directly from the command line:
 
 ```bash
 # Launch worker process against a plugins directory
-python -m plugin_host.worker /path/to/plugins
+python -m evoker.worker /path/to/plugins
 ```
 
 When invoked via CLI, `worker.py` parses `sys.argv[1]` as the plugin directory and calls `start_worker(sys.argv[1])`.

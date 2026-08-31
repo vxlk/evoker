@@ -56,7 +56,7 @@ In `host.py`, import `PluginClient`, point it to your `plugins` directory, start
 
 ```python
 from pathlib import Path
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 
 # Point the client to your plugins directory
 client = PluginClient(Path("plugins"))

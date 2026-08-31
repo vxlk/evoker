@@ -23,7 +23,6 @@ class PluginClient:
         self.auth_token = None
         
     def start_worker(self):
-        worker_script = Path(__file__).parent / "worker.py"
         import os
         env = os.environ.copy()
         
@@ -49,20 +48,20 @@ class PluginClient:
                 if var != "PATH":
                     del env[var]
                 
-        is_frozen = getattr(sys, "frozen", False)
-        if is_frozen:
-            base_dir = Path(sys._MEIPASS)
-            # Add the extracted raw source code directory to PYTHONPATH
-            # so external venv Python interpreters can import plugin_host!
-            plugin_host_src = base_dir / "plugin_host_src"
-            env["PYTHONPATH"] = str(plugin_host_src)
-            plugin_host_dir = plugin_host_src / "plugin_host"
-            worker_script = plugin_host_dir / "worker.py"
-        else:
-            plugin_host_dir = Path(__file__).parent
-            env["PYTHONPATH"] = str(plugin_host_dir.parent)
-            worker_script = plugin_host_dir / "worker.py"
-
+        import importlib.util
+        spec = importlib.util.find_spec("evoker.worker")
+        if not spec or not spec.origin:
+            raise RuntimeError("Cannot find evoker.worker. Is evoker installed?")
+            
+        worker_script = Path(spec.origin)
+        evoker_pkg_dir = worker_script.parent
+        
+        # Set PYTHONPATH so the standalone python can import it
+        env["PYTHONPATH"] = str(evoker_pkg_dir.parent)
+        
+        # Also, pythons directory might be in evoker_client
+        client_dir = Path(__file__).parent
+        
         if self.strategies is not None:
             env["EVOKER_STRATEGIES"] = json.dumps(self.strategies)
             
@@ -94,7 +93,7 @@ class PluginClient:
         
         # 2. Check the common pythons directory
         if python_exe == Path(sys.executable):
-            pythons_dir = plugin_host_dir / "pythons"
+            pythons_dir = client_dir / "pythons"
             if pythons_dir.exists():
                 for item in pythons_dir.iterdir():
                     if item.is_dir() and item.name.startswith("python-"):
@@ -115,7 +114,7 @@ class PluginClient:
             cmd = [str(python_exe), "--evoker-worker", str(worker_script), str(self.plugins_dir)]
         else:
             # When using an external Python interpreter (.venv), it natively supports running modules
-            cmd = [str(python_exe), "-u", "-m", "plugin_host.worker", str(self.plugins_dir)]
+            cmd = [str(python_exe), "-u", "-m", "evoker.worker", str(self.plugins_dir)]
 
         self.worker_process = subprocess.Popen(
             cmd,

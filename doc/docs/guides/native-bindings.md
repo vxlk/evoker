@@ -55,7 +55,7 @@ fn main() {
     let mut client = PluginClient::new(plugins_dir, None, None);
     
     // Boot the python worker. Passing `None` triggers Automatic Bootstrapping!
-    client.start_worker(None, "plugin_host.worker").expect("Failed to start worker");
+    client.start_worker(None, "evoker.worker").expect("Failed to start worker");
     
     // Scan for available plugins
     let manifest = client.scan().expect("Scan failed");
@@ -89,7 +89,7 @@ int main() {
     evoker::PluginClient client("plugins/");
     
     // Boot the worker. Passing "" triggers Automatic Bootstrapping!
-    if (!client.start_worker("", "plugin_host.worker")) {
+    if (!client.start_worker("", "evoker.worker")) {
         std::cerr << "Failed to boot plugin worker!" << std::endl;
         return 1;
     }
@@ -130,7 +130,7 @@ int main() {
     if (!client) return 1;
     
     // Boot the worker. Passing "" triggers Automatic Bootstrapping!
-    if (!evoker_client_start_worker(client, "", "plugin_host.worker")) {
+    if (!evoker_client_start_worker(client, "", "evoker.worker")) {
         printf("Failed to boot plugin worker!\n");
         return 1;
     }

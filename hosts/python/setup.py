@@ -8,17 +8,18 @@ from setuptools.command.build_py import build_py
 PYTHON_VERSION = "3.13"
 
 setup(
-    name='evoker',
+    name='evoker_client',
     version='0.1.0',
-    description='Evoker: Extending native applications with Python',
+    description='Evoker Python Client',
     python_requires='>=3.10',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     install_requires=[
+        'evoker'
     ],
     entry_points={
         'pyinstaller40': [
-            'hook-dirs = plugin_host._pyinstaller:get_hook_dirs',
+            'hook-dirs = evoker_client._pyinstaller:get_hook_dirs',
         ]
     },
     extras_require={

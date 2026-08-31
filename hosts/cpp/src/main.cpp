@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     }
 
     evoker::PluginClient client(plugins_dir);
-    if (!client.start_worker("python", "plugin_host.worker")) {
+    if (!client.start_worker("python", "evoker.worker")) {
         std::cerr << "Failed to start worker" << std::endl;
         return 1;
     }

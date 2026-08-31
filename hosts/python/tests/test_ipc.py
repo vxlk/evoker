@@ -1,5 +1,5 @@
 import pytest
-from plugin_host.client import PluginClient
+from evoker_client.client import PluginClient
 import xmlrpc.client
 
 def test_worker_ipc(temp_plugins_dir):
