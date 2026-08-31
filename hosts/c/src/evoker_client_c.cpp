@@ -35,7 +35,6 @@ evoker_client_t* evoker_client_create(const char* plugins_dir,
                 v.push_back(s);
             }
             strats = v;
-            strats = v;
         } catch (const std::exception& e) {
             g_last_error = e.what();
             return nullptr;
@@ -53,7 +52,6 @@ evoker_client_t* evoker_client_create(const char* plugins_dir,
             for (const auto& item : j) {
                 v.push_back(item.get<std::string>());
             }
-            injected = v;
             injected = v;
         } catch (const std::exception& e) {
             g_last_error = e.what();
@@ -103,6 +101,10 @@ char* evoker_client_scan(evoker_client_t* client) {
         nlohmann::json res = c->scan();
         std::string s = res.dump();
         char* out = (char*)malloc(s.length() + 1);
+        if (!out) {
+            g_last_error = "Out of memory";
+            return nullptr;
+        }
         std::strcpy(out, s.c_str());
         g_last_error.clear();
         return out;
@@ -130,6 +132,10 @@ char* evoker_client_invoke(evoker_client_t* client,
         nlohmann::json res = c->invoke(plugin_name, action_name, kwargs);
         std::string s = res.dump();
         char* out = (char*)malloc(s.length() + 1);
+        if (!out) {
+            g_last_error = "Out of memory";
+            return nullptr;
+        }
         std::strcpy(out, s.c_str());
         g_last_error.clear();
         return out;
