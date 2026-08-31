@@ -51,6 +51,9 @@ class PluginAction:
 class PluginManager:
     def __init__(self, strategies: Optional[List[PluginStrategy]] = None):
         self.plugins = {}
+        if "evoker_plugins" not in sys.modules:
+            import types
+            sys.modules["evoker_plugins"] = types.ModuleType("evoker_plugins")
         if strategies is None:
             self.strategies = [ExactMatchStrategy("on_start", ["app_context"])]
         else:
@@ -148,6 +151,7 @@ class PluginManager:
             spec.loader.exec_module(module)
         except Exception as e:
             logger.error(f"Error executing plugin {plugin_dir.name}: {e}")
+            sys.modules.pop(module_name, None)
             return None
         finally:
             sys.path.pop(0)
