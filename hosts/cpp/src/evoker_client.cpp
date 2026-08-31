@@ -26,15 +26,12 @@ static std::string xmlrpc_escape(const std::string& str) {
 static std::string json_to_xmlrpc(const nlohmann::json& j) {
     if (j.is_string()) {
         std::string s = j.get<std::string>();
-        std::string clean;
         for (char c : s) {
             if (c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t') {
-                clean += "&#x" + std::to_string(static_cast<int>(c)) + ";";
-            } else {
-                clean += c;
+                throw std::invalid_argument("Control characters are not allowed in XML-RPC strings");
             }
         }
-        return "<value><string>" + xmlrpc_escape(clean) + "</string></value>";
+        return "<value><string>" + xmlrpc_escape(s) + "</string></value>";
     } else if (j.is_number_integer()) {
         int64_t val = j.get<int64_t>();
         if (val > 2147483647LL || val < -2147483648LL) {
