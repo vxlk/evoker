@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <thread>
 #include <nlohmann/json.hpp>
 
 namespace reproc { class process; }
@@ -60,6 +61,7 @@ private:
     std::optional<std::vector<std::string>> m_injected_packages;
     
     std::unique_ptr<reproc::process> m_process;
+    std::thread m_drain_thread;
     uint16_t m_port;
     bool m_running;
     std::string m_token;

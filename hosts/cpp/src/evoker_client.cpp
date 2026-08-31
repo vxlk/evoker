@@ -338,9 +338,9 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
     }
 
     // Launch a background thread to sink the rest of stdout/stderr
-    std::thread([this]() {
+    m_drain_thread = std::thread([this]() {
         reproc::drain(*m_process, reproc::sink::ostream(std::cout), reproc::sink::ostream(std::cerr));
-    }).detach();
+    });
 
     return true;
 }
@@ -351,6 +351,10 @@ void PluginClient::stop_worker() {
         m_process->wait(reproc::milliseconds(2000));
         m_process->kill();
         m_running = false;
+        
+        if (m_drain_thread.joinable()) {
+            m_drain_thread.join();
+        }
     }
 }
 
