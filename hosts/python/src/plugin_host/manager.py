@@ -170,6 +170,7 @@ class PluginManager:
             if name.startswith("_"):
                 continue
             if getattr(func, '__module__', None) != module.__name__:
+                logger.debug(f"Action '{name}' in plugin '{module.__name__}' was filtered out because it belongs to module '{getattr(func, '__module__', None)}'")
                 continue
 
             sig = inspect.signature(func)
