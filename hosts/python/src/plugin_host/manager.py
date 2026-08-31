@@ -126,6 +126,18 @@ class PluginManager:
                         if pkg_name in sys.modules:
                             mod = sys.modules[pkg_name]
                             if hasattr(mod, '__file__') and mod.__file__ and str(site_packages) not in mod.__file__:
+                                import importlib.metadata
+                                try:
+                                    loaded_version = importlib.metadata.version(pkg_name)
+                                    plugin_version = None
+                                    for dist in importlib.metadata.distributions(path=[str(site_packages)]):
+                                        if dist.name.replace("-", "_").lower() == pkg_name.lower():
+                                            plugin_version = dist.version
+                                            break
+                                    if plugin_version and loaded_version and plugin_version == loaded_version:
+                                        continue
+                                except Exception:
+                                    pass
                                 logger.error(f"Plugin {plugin_dir.name} dependency collision: '{pkg_name}' already loaded from {mod.__file__}")
                                 sys.modules.pop(module_name, None)
                                 return None
