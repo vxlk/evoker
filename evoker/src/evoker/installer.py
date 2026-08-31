@@ -75,7 +75,7 @@ def install_plugin_deps(plugin_path: Path) -> bool:
     
     if wheels_dir.exists() and any(wheels_dir.iterdir()):
         logger.info(f"Plugin {plugin_path.name} contains offline wheels. Preferring local wheels.")
-        cmd.extend(["--find-links", str(wheels_dir)])
+        cmd.extend(["--no-index", "--find-links", str(wheels_dir)])
         
     logger.info(f"Installing dependencies for plugin {plugin_path.name}...")
     

@@ -25,12 +25,20 @@ int main() {
     }
 
     char* manifest = evoker_client_scan(client);
-    printf("Manifest: %s\n", manifest);
-    evoker_client_free_string(manifest);
+    if (manifest) {
+        printf("Manifest: %s\n", manifest);
+        evoker_client_free_string(manifest);
+    } else {
+        printf("Scan failed\n");
+    }
 
     char* result = evoker_client_invoke(client, "test_plugin", "hello_world", "{\"name\": \"World\"}");
-    printf("Result: %s\n", result);
-    evoker_client_free_string(result);
+    if (result) {
+        printf("Result: %s\n", result);
+        evoker_client_free_string(result);
+    } else {
+        printf("Invoke failed\n");
+    }
 
     evoker_client_destroy(client);
     return 0;

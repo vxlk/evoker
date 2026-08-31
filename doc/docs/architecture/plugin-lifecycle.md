@@ -32,9 +32,9 @@ sequenceDiagram
     Client->>Client: Set EVOKER_STRATEGIES & EVOKER_INJECTED_PACKAGES
     Client->>Client: Resolve Python interpreter (venv -> bundled -> host)
     Client->>Worker: subprocess.Popen(worker.py, env)
-    Worker->>Worker: SimpleXMLRPCServer(('localhost', 0))
+    Worker->>Worker: ThreadingXMLRPCServer(('127.0.0.1', 0))
     Worker-->>Client: stdout: "RPC_PORT:<port>"
-    Client->>Client: ServerProxy(http://localhost:<port>)
+    Client->>Client: ServerProxy(http://127.0.0.1:<port>)
     Client->>Client: Spawn stdout forwarding daemon thread
 
     Note over Host, Plugin: Phase 2: Discovery & Loading
@@ -140,10 +140,10 @@ self.worker_process = subprocess.Popen(
 ```
 
 ### 5. Handshake & Port Negotiation
-1. `worker.py` binds a `SimpleXMLRPCServer` to `("localhost", 0)`. The operating system allocates an available ephemeral TCP port.
+1. `worker.py` binds a `ThreadingXMLRPCServer` to `("127.0.0.1", 0)`. The operating system allocates an available ephemeral TCP port.
 2. The worker outputs `RPC_PORT:<assigned_port>` to `stdout` with an immediate flush.
 3. `PluginClient` blocks on `readline()` (up to a 5-second timeout) to parse the assigned port number.
-4. `PluginClient` establishes an `xmlrpc.client.ServerProxy(f"http://localhost:{port}")`.
+4. `PluginClient` establishes an `xmlrpc.client.ServerProxy(f"http://127.0.0.1:{port}")`.
 5. A daemon thread is spawned in the host process to asynchronously read and forward any remaining worker `stdout` lines to the host terminal.
 
 ---

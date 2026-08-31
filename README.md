@@ -101,7 +101,7 @@ Because plugins are designed to be user-facing, you should **not** bundle your d
 
 **Best Practice for Distribution:**
 After running your PyInstaller compilation, implement a post-build step in your build scripts to copy your default plugins alongside the executable.
-An example PowerShell build script `build.ps1` is provided in the root of this repository:
+Here is an example `build.ps1` script you can use:
 ```powershell
 # 1. Build the executable
 .\venv\Scripts\python.exe -m PyInstaller build.spec -y

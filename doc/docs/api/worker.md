@@ -29,13 +29,13 @@ sequenceDiagram
     participant CLI as CLI / Host Launcher
     participant Init as worker.py Init
     participant RPC as PluginWorkerRPC
-    participant Server as SimpleXMLRPCServer
+    participant Server as ThreadingXMLRPCServer
     participant Manager as PluginManager
 
     CLI->>Init: Run worker.py <plugins_dir>
     Init->>Init: parse_injected_packages(EVOKER_INJECTED_PACKAGES)
     Init->>Init: parse_strategies(EVOKER_STRATEGIES)
-    Init->>Server: Initialize SimpleXMLRPCServer("localhost", port=0)
+    Init->>Server: Initialize ThreadingXMLRPCServer("127.0.0.1", port=0)
     Server-->>Init: Ephemeral Port Assigned
     Init->>CLI: Print "RPC_PORT:<port>"
     Init->>RPC: PluginWorkerRPC(plugins_dir)
@@ -121,7 +121,7 @@ Initializes and starts the blocking XML-RPC server for plugin operations.
 
 #### Lifecycle Steps
 
-1. Instantiates `SimpleXMLRPCServer(("localhost", port), allow_none=True)`.
+1. Instantiates `ThreadingXMLRPCServer(("127.0.0.1", port), requestHandler=AuthXMLRPCRequestHandler, allow_none=True)`.
 2. Inspects `server.server_address[1]` to obtain the actual bound TCP port.
 3. Prints `RPC_PORT:<port>` to stdout with immediate flush (`flush=True`), allowing parent processes to scrape the address.
 4. Instantiates `PluginWorkerRPC(Path(plugins_dir))` and registers it via `server.register_instance()`.
@@ -136,7 +136,7 @@ class PluginWorkerRPC:
     def __init__(self, plugins_dir: Path)
 ```
 
-The RPC handler class registered with the `SimpleXMLRPCServer`. All public methods on this class are directly callable by the XML-RPC client.
+The RPC handler class registered with the `ThreadingXMLRPCServer`. All public methods on this class are directly callable by the XML-RPC client.
 
 ### State & Initialization
 
@@ -207,7 +207,7 @@ Executes a specific action exported by a loaded plugin with the provided keyword
 3. Calls the target action function: `action.func(**kwargs)`.
 4. If the plugin function raises an unhandled exception:
    - Logs the exception via `logger.error(...)`.
-   - Re-raises the exception. The underlying `SimpleXMLRPCServer` serializes it as an XML-RPC `Fault`, allowing the host application's client to handle the traceback.
+   - Re-raises the exception. The underlying `ThreadingXMLRPCServer` serializes it as an XML-RPC `Fault`, allowing the host application's client to handle the traceback.
 
 ---
 

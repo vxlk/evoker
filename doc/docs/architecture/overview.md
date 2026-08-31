@@ -42,8 +42,8 @@ graph TB
     end
     HA --> PC1
     HA --> PC2
-    PC1 -->|XML-RPC localhost| W1
-    PC2 -->|XML-RPC localhost| W2
+    PC1 -->|XML-RPC 127.0.0.1| W1
+    PC2 -->|XML-RPC 127.0.0.1| W2
     W1 --> PM1
     PM1 --> P1
     PM1 --> P2
@@ -56,7 +56,7 @@ graph TB
 1. **Dedicated Interpreter Isolation**: Each worker subprocess runs its own Python interpreter instance. It maintains its own `sys.modules`, `sys.path`, memory space, and GIL.
 2. **Crash Resilience**: If a plugin raises an unhandled Python exception, the worker catches it and returns an RPC `Fault` back to the host. The worker process remains alive and ready for subsequent invocations. If a plugin triggers a fatal C-level crash, only that specific worker terminates without bringing down the host application.
 3. **Multiple Client Domains**: A single host application can spawn multiple `PluginClient` instances targeting different plugin directories (e.g., built-in tools vs. user plugins), isolating their dependencies from one another.
-4. **Loopback XML-RPC Transport**: Host and worker communicate over loopback TCP (`localhost`) via standard XML-RPC. Ephemeral OS-assigned ports (port `0`) avoid port conflicts across concurrent workers.
+4. **Loopback XML-RPC Transport**: Host and worker communicate over loopback TCP (`127.0.0.1`) via standard XML-RPC. Ephemeral OS-assigned ports (port `0`) avoid port conflicts across concurrent workers.
 
 ---
 
@@ -71,7 +71,7 @@ flowchart LR
     end
 
     subgraph Transport["Communication Channel"]
-        XMLRPC["XML-RPC (Localhost TCP)"]
+        XMLRPC["XML-RPC (127.0.0.1 TCP)"]
     end
 
     subgraph Worker["Plugin Worker Process"]
@@ -89,7 +89,7 @@ flowchart LR
 
 ### Wire Protocol
 
-The communication layer manages orchestration, discovery, and invocation using Python's standard library `xmlrpc.client` and `xmlrpc.server.SimpleXMLRPCServer`.
+The communication layer manages orchestration, discovery, and invocation using Python's standard library `xmlrpc.client` and `xmlrpc.server.ThreadingXMLRPCServer`.
 
 - **Payload Characteristics**: Strictly lightweight primitives (strings, integers, floats, booleans, lists, and dicts).
 - **Core Operations**:

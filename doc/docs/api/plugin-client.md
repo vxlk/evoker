@@ -109,7 +109,7 @@ Spawns the worker subprocess, configures process isolation, captures the allocat
 4. **Process Launch**: Spawns `evoker.worker` with unbuffered I/O (`-u`) via `subprocess.Popen`.
 5. **Port Scraping**: Reads stdout line-by-line within a 5-second timeout window until it captures the `RPC_PORT:<port>` initialization token.
 6. **Stdout Forwarding**: Spawns a background daemon thread to stream subsequent worker stdout to the host application's `sys.stdout`.
-7. **Proxy Initialization**: Instantiates an `xmlrpc.client.ServerProxy` targeting `http://localhost:<port>`.
+7. **Proxy Initialization**: Instantiates an `xmlrpc.client.ServerProxy` targeting `http://127.0.0.1:<port>`.
 
 #### Raises
 
@@ -183,11 +183,10 @@ Invokes an action exported by a specific plugin within the worker process.
 | :--- | :--- | :--- |
 | `plugin_name` | `str` | Name of the target plugin directory/module. |
 | `action_name` | `str` | Name of the function to invoke. |
-| `kwargs` | `dict` | Keyword arguments to pass to the plugin function. |
+| `kwargs` | `dict` | Keyword arguments to supply to the action. Keys must be strings. |
 
-#### Returns
-
-- `Any`: The return value of the plugin function (must be XML-RPC marshallable).
+#### Return Value
+The result of the action execution. `base64` and `dateTime.iso8601` types returned by the plugin are delivered as raw, un-decoded strings (with leading/trailing whitespace stripped in C++).
 
 #### Exceptions
 

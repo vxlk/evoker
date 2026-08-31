@@ -137,13 +137,17 @@ int main() {
     
     // Scan for plugins. The client handles memory allocation.
     char* manifest_json = evoker_client_scan(client);
-    printf("Plugins: %s\n", manifest_json);
-    evoker_client_free_string(manifest_json);
+    if (manifest_json) {
+        printf("Plugins: %s\n", manifest_json);
+        evoker_client_free_string(manifest_json);
+    }
     
     // Invoke a plugin action by passing JSON strings
     char* result_json = evoker_client_invoke(client, "my_plugin", "hello_world", "{\"name\": \"C Programmer\"}");
-    printf("Result: %s\n", result_json);
-    evoker_client_free_string(result_json);
+    if (result_json) {
+        printf("Result: %s\n", result_json);
+        evoker_client_free_string(result_json);
+    }
     
     // Cleanup
     evoker_client_destroy(client);

@@ -403,7 +403,15 @@ nlohmann::json PluginClient::parse_xmlrpc_value(const void* xml_node_ptr) {
         return nlohmann::json();
     } else if (type == "base64" || type == "dateTime.iso8601") {
         const char* text = child->GetText();
-        return nlohmann::json(text ? text : "");
+        std::string s = text ? text : "";
+        size_t start = s.find_first_not_of(" \n\r\t");
+        if (start != std::string::npos) {
+            s.erase(0, start);
+            s.erase(s.find_last_not_of(" \n\r\t") + 1);
+        } else {
+            s.clear();
+        }
+        return nlohmann::json(s);
     } else if (type == "array") {
         nlohmann::json arr = nlohmann::json::array();
         const tinyxml2::XMLElement* data = child->FirstChildElement("data");

@@ -142,13 +142,14 @@ def test_fuzz_rpc_serialization(temp_plugins_dir, kwargs_payload):
     
     plugin_dir = temp_plugins_dir / "rpc_plugin"
     plugin_dir.mkdir(parents=True, exist_ok=True)
-    (plugin_dir / "manifest.json").write_text('{"name": "test"}', encoding="utf-8")
+    (plugin_dir / "manifest.json").write_text('{"name": "rpc_plugin"}', encoding="utf-8")
     (plugin_dir / "__init__.py").write_text("def rpc_action(**kwargs): return kwargs", encoding="utf-8")
     
     client = PluginClient(temp_plugins_dir)
     try:
         client.start_worker()
-        client.get_plugins()
+        plugins = client.get_plugins()
+        assert "rpc_plugin" in plugins, "Plugin failed to load in fuzz test"
         try:
             client.run_action("rpc_plugin", "rpc_action", kwargs_payload)
         except xmlrpc.client.Fault:
