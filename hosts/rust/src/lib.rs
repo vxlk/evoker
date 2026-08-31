@@ -20,6 +20,47 @@ pub struct ExactMatchStrategy {
     pub args: Vec<String>,
 }
 
+fn ensure_evoker_installed(exe_path: &PathBuf) -> Result<(), String> {
+    // Verify import succeeds
+    let import_status = Command::new(exe_path)
+        .args(&["-c", "import evoker.worker"])
+        .status()
+        .map_err(|e| e.to_string())?;
+        
+    if import_status.success() {
+        return Ok(());
+    }
+
+    println!("Installing evoker runtime into bootstrapped python...");
+    let mut repo_path = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+    while !repo_path.join("evoker").join("pyproject.toml").exists() {
+        if !repo_path.pop() {
+            return Err("Could not find evoker package directory to install runtime".to_string());
+        }
+    }
+    
+    let evoker_package = repo_path.join("evoker");
+    let pip_status = Command::new(exe_path)
+        .args(&["-m", "pip", "install", evoker_package.to_str().unwrap()])
+        .status()
+        .map_err(|e| e.to_string())?;
+        
+    if !pip_status.success() {
+        return Err("Failed to install evoker runtime via pip".to_string());
+    }
+    
+    let import_status_2 = Command::new(exe_path)
+        .args(&["-c", "import evoker.worker"])
+        .status()
+        .map_err(|e| e.to_string())?;
+        
+    if !import_status_2.success() {
+        return Err("Failed to import evoker.worker after installation".to_string());
+    }
+    
+    Ok(())
+}
+
 pub fn bootstrap_python() -> Result<PathBuf, String> {
     let home = std::env::var("USERPROFILE").or_else(|_| std::env::var("HOME")).unwrap_or_else(|_| ".".to_string());
     let evoker_dir = PathBuf::from(home).join(".evoker").join("python");
@@ -41,6 +82,7 @@ pub fn bootstrap_python() -> Result<PathBuf, String> {
     };
 
     if exe_path.exists() {
+        ensure_evoker_installed(&exe_path)?;
         return Ok(exe_path);
     }
 
@@ -102,6 +144,35 @@ pub fn bootstrap_python() -> Result<PathBuf, String> {
     let _ = std::fs::remove_file(archive_path);
     
     if exe_path.exists() {
+        // Install the evoker runtime
+        println!("Installing evoker runtime into bootstrapped python...");
+        let mut repo_path = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+        while !repo_path.join("evoker").join("pyproject.toml").exists() {
+            if !repo_path.pop() {
+                return Err("Could not find evoker package directory to install runtime".to_string());
+            }
+        }
+        
+        let evoker_package = repo_path.join("evoker");
+        let pip_status = Command::new(&exe_path)
+            .args(&["-m", "pip", "install", evoker_package.to_str().unwrap()])
+            .status()
+            .map_err(|e| e.to_string())?;
+            
+        if !pip_status.success() {
+            return Err("Failed to install evoker runtime via pip".to_string());
+        }
+        
+        // Verify import succeeds
+        let import_status = Command::new(&exe_path)
+            .args(&["-c", "import evoker.worker"])
+            .status()
+            .map_err(|e| e.to_string())?;
+            
+        if !import_status.success() {
+            return Err("Failed to import evoker.worker after installation".to_string());
+        }
+        
         Ok(exe_path)
     } else {
         Err(format!("Python executable not found after extraction at {:?}", exe_path))

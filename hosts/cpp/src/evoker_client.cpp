@@ -85,27 +85,70 @@ PluginClient::~PluginClient() {
     stop_worker();
 }
 
-static std::string bootstrap_python() {
-#ifdef _WIN32
-    std::string home = getenv("USERPROFILE") ? getenv("USERPROFILE") : ".";
-    std::string triple = "x86_64-pc-windows-msvc";
-    std::string exe_name = "python.exe";
+static bool ensure_evoker_installed(const std::string& exe_path) {
+    reproc::process test_import;
+    std::vector<std::string> test_args = {exe_path, "-c", "import evoker.worker"};
+    if (test_import.start(test_args) == std::error_code{} && test_import.wait(reproc::infinite).first == 0) {
+        return true;
+    }
+    
+    std::cout << "Installing evoker runtime into bootstrapped python..." << std::endl;
+    std::filesystem::path repo_path = std::filesystem::current_path();
+    bool found = false;
+    while (!repo_path.empty() && repo_path.string() != repo_path.root_path().string()) {
+        if (std::filesystem::exists(repo_path / "evoker" / "pyproject.toml")) {
+            found = true;
+            break;
+        }
+        repo_path = repo_path.parent_path();
+    }
+    
+    if (!found) {
+        std::cerr << "Could not find evoker package directory to install runtime" << std::endl;
+        return false;
+    }
+    
+    std::filesystem::path evoker_pkg = repo_path / "evoker";
+    reproc::process pip_install;
+    std::vector<std::string> pip_args = {exe_path, "-m", "pip", "install", evoker_pkg.string()};
+    if (pip_install.start(pip_args) != std::error_code{} || pip_install.wait(reproc::infinite).first != 0) {
+        std::cerr << "Failed to install evoker runtime via pip" << std::endl;
+        return false;
+    }
+    
+    reproc::process verify_import;
+    if (verify_import.start(test_args) != std::error_code{} || verify_import.wait(reproc::infinite).first != 0) {
+        std::cerr << "Failed to import evoker.worker after installation" << std::endl;
+        return false;
+    }
+    
+    return true;
+}
+
+std::string bootstrap_python() {
+    std::string triple;
+    std::string exe_name;
+    std::string home;
+#if defined(_WIN32)
+    triple = "x86_64-pc-windows-msvc";
+    exe_name = "python.exe";
+    home = getenv("USERPROFILE") ? getenv("USERPROFILE") : ".";
 #elif defined(__APPLE__)
-    std::string home = getenv("HOME") ? getenv("HOME") : ".";
-    #if defined(__aarch64__) || defined(_M_ARM64)
-    std::string triple = "aarch64-apple-darwin";
+    home = getenv("HOME") ? getenv("HOME") : ".";
+    #if defined(__aarch64__)
+    triple = "aarch64-apple-darwin";
     #else
-    std::string triple = "x86_64-apple-darwin";
+    triple = "x86_64-apple-darwin";
     #endif
-    std::string exe_name = "bin/python3";
+    exe_name = "bin/python3";
 #else
-    std::string home = getenv("HOME") ? getenv("HOME") : ".";
+    home = getenv("HOME") ? getenv("HOME") : ".";
     #if defined(__aarch64__) || defined(_M_ARM64)
-    std::string triple = "aarch64-unknown-linux-gnu";
+    triple = "aarch64-unknown-linux-gnu";
     #else
-    std::string triple = "x86_64-unknown-linux-gnu";
+    triple = "x86_64-unknown-linux-gnu";
     #endif
-    std::string exe_name = "bin/python3";
+    exe_name = "bin/python3";
 #endif
 
     std::filesystem::path evoker_dir = std::filesystem::path(home) / ".evoker" / "python";
@@ -113,7 +156,10 @@ static std::string bootstrap_python() {
     std::filesystem::path exe_path = target_dir / "python" / exe_name;
 
     if (std::filesystem::exists(exe_path)) {
-        return exe_path.string();
+        if (ensure_evoker_installed(exe_path.string())) {
+            return exe_path.string();
+        }
+        return "";
     }
 
     std::filesystem::create_directories(target_dir);
