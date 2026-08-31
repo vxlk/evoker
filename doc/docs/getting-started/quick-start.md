@@ -28,11 +28,12 @@ my_app/
 
 ### 1. Plugin Manifest (`manifest.json`)
 
-Inside `plugins/hello_plugin/manifest.json`, define basic metadata describing your plugin:
+Inside `plugins/hello_plugin/manifest.json`, define basic metadata describing your plugin. 
+**Note:** The `name` field must exactly match the name of the plugin's directory.
 
 ```json
 {
-  "name": "hello",
+  "name": "hello_plugin",
   "version": "1.0.0",
   "description": "My first plugin"
 }
@@ -89,7 +90,7 @@ python host.py
 ### Output
 
 ```text
-Discovered Plugins: {'hello_plugin': {'greet': {'args': ['name'], 'types': {'name': 'str'}, 'return_type': 'str', ...}}}
+Discovered Plugins: {'hello_plugin': {'greet': {'name': 'greet', 'signature': {'parameters': {'name': {'type': 'str', 'required': True}}}, 'is_keyword': False, 'strategy_metadata': None}}}
 Result: Hello, World!
 ```
 
