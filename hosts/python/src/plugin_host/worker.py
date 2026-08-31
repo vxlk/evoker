@@ -10,11 +10,13 @@ class AuthXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
     def parse_request(self):
         if super().parse_request():
             expected_token = os.environ.get("EVOKER_AUTH_TOKEN")
-            if expected_token:
-                auth_token = self.headers.get("X-Evoker-Auth")
-                if auth_token != expected_token:
-                    self.send_error(401, "Unauthorized")
-                    return False
+            if not expected_token:
+                self.send_error(500, "Worker improperly configured (missing auth token)")
+                return False
+            auth_token = self.headers.get("X-Evoker-Auth")
+            if auth_token != expected_token:
+                self.send_error(401, "Unauthorized")
+                return False
             return True
         return False
 

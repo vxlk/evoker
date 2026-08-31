@@ -62,6 +62,7 @@ private:
     std::unique_ptr<reproc::process> m_process;
     uint16_t m_port;
     bool m_running;
+    std::string m_token;
 };
 
 } // namespace evoker

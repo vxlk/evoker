@@ -136,6 +136,7 @@ pub struct PluginClient {
     pub injected_packages: Option<Vec<PathBuf>>,
     worker_process: Option<Child>,
     port: Option<u16>,
+    token: String,
 }
 
 impl PluginClient {
@@ -144,12 +145,15 @@ impl PluginClient {
         strategies: Option<Vec<Strategy>>,
         injected_packages: Option<Vec<PathBuf>>,
     ) -> Self {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let token = format!("{:x}", SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos());
         Self {
             plugins_dir: plugins_dir.as_ref().to_path_buf(),
             strategies,
             injected_packages,
             worker_process: None,
             port: None,
+            token,
         }
     }
 
@@ -167,6 +171,7 @@ impl PluginClient {
         } else {
             cmd.arg("-m").arg(worker_target);
         }
+        cmd.env("EVOKER_AUTH_TOKEN", &self.token);
         
         cmd.arg(self.plugins_dir.to_str().unwrap());
 
@@ -266,13 +271,25 @@ impl PluginClient {
         self.port = None;
     }
 
+    fn client(&self) -> reqwest::blocking::Client {
+        use reqwest::header::{HeaderMap, HeaderValue};
+        let mut headers = HeaderMap::new();
+        if let Ok(val) = HeaderValue::from_str(&self.token) {
+            headers.insert("X-Evoker-Auth", val);
+        }
+        reqwest::blocking::Client::builder()
+            .default_headers(headers)
+            .build()
+            .unwrap()
+    }
+
     pub fn get_url(&self) -> String {
-        format!("http://localhost:{}", self.port.unwrap_or(0))
+        format!("http://127.0.0.1:{}", self.port.unwrap_or(0))
     }
 
     pub fn scan(&self) -> Result<Value, String> {
         let req = Request::new("scan");
-        req.call_url(&self.get_url())
+        req.call(self.client().post(&self.get_url()))
             .map_err(|e| format!("RPC error: {}", e))
     }
 
@@ -287,7 +304,7 @@ impl PluginClient {
             .arg(action_name)
             .arg(Value::Struct(kwargs));
             
-        req.call_url(&self.get_url())
+        req.call(self.client().post(&self.get_url()))
             .map_err(|e| format!("RPC error: {}", e))
     }
 }

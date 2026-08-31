@@ -77,6 +77,8 @@ PluginClient::PluginClient(const std::string& plugins_dir,
       m_injected_packages(std::move(injected_packages)),
       m_port(0),
       m_running(false) {
+    auto now = std::chrono::system_clock::now().time_since_epoch().count();
+    m_token = std::to_string(now);
 }
 
 PluginClient::~PluginClient() {
@@ -216,6 +218,7 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
         nlohmann::json j = *m_injected_packages;
         env["EVOKER_INJECTED_PACKAGES"] = j.dump();
     }
+    env["EVOKER_AUTH_TOKEN"] = m_token;
     if (!env.empty()) {
         options.env.extra = reproc::env(env);
     }
@@ -390,8 +393,11 @@ nlohmann::json PluginClient::parse_xmlrpc_response(const std::string& xml_conten
 
 nlohmann::json PluginClient::scan() {
     std::string req = build_xmlrpc_request("scan", {});
-    httplib::Client cli("localhost", m_port);
-    auto res = cli.Post("/", req, "text/xml");
+    httplib::Client cli("127.0.0.1", m_port);
+    httplib::Headers headers = {
+        {"X-Evoker-Auth", m_token}
+    };
+    auto res = cli.Post("/", headers, req, "text/xml");
     if (res && res->status == 200) {
         return parse_xmlrpc_response(res->body);
     }
@@ -402,8 +408,11 @@ nlohmann::json PluginClient::invoke(const std::string& plugin_name,
                                     const std::string& action_name, 
                                     const nlohmann::json& kwargs) {
     std::string req = build_xmlrpc_request("invoke", {plugin_name, action_name, kwargs});
-    httplib::Client cli("localhost", m_port);
-    auto res = cli.Post("/", req, "text/xml");
+    httplib::Client cli("127.0.0.1", m_port);
+    httplib::Headers headers = {
+        {"X-Evoker-Auth", m_token}
+    };
+    auto res = cli.Post("/", headers, req, "text/xml");
     if (res && res->status == 200) {
         return parse_xmlrpc_response(res->body);
     }
