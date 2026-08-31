@@ -1,4 +1,5 @@
 import importlib.util
+import importlib.metadata
 import inspect
 import json
 import logging
@@ -91,7 +92,8 @@ class PluginManager:
             return None
 
         # Namespace the module to avoid collisions
-        module_name = f"evoker_plugins.{plugin_dir.name}"
+        safe_name = plugin_dir.name.replace(".", "_")
+        module_name = f"evoker_plugins.{safe_name}"
         spec = importlib.util.spec_from_file_location(module_name, init_path)
         if spec is None or spec.loader is None:
             logger.warning(f"Skipping {plugin_dir}: Failed to create module spec")
@@ -129,7 +131,6 @@ class PluginManager:
                         if pkg_name in sys.modules:
                             mod = sys.modules[pkg_name]
                             if hasattr(mod, '__file__') and mod.__file__ and str(site_packages) not in mod.__file__:
-                                import importlib.metadata
                                 try:
                                     loaded_version = importlib.metadata.version(pkg_name)
                                     plugin_version = None
@@ -169,8 +170,9 @@ class PluginManager:
         for name, func in inspect.getmembers(module, inspect.isfunction):
             if name.startswith("_"):
                 continue
-            if getattr(func, '__module__', None) != module.__name__:
-                logger.debug(f"Action '{name}' in plugin '{module.__name__}' was filtered out because it belongs to module '{getattr(func, '__module__', None)}'")
+            original_func = inspect.unwrap(func)
+            if getattr(original_func, '__module__', None) != module.__name__:
+                logger.debug(f"Action '{name}' in plugin '{module.__name__}' was filtered out because it belongs to module '{getattr(original_func, '__module__', None)}'")
                 continue
 
             sig = inspect.signature(func)
@@ -183,6 +185,8 @@ class PluginManager:
                 type_name = "unannotated"
                 if param.annotation is not inspect.Parameter.empty:
                     type_name = getattr(param.annotation, "__name__", str(param.annotation))
+                else:
+                    logger.warning(f"Argument '{param_name}' in action '{name}' lacks type hint. Defaulting to unannotated.")
                 
                 sig_info["parameters"][param_name] = {
                     "type": type_name,
