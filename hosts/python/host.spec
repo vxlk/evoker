@@ -7,6 +7,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('src/evoker_client', 'evoker_client'),
+        ('../../evoker/src/evoker', 'evoker'),
         ('examples/plugins', 'plugins'),
         ('examples/host_api', 'injected/host_api')
     ],
