@@ -1,6 +1,8 @@
 #include "evoker_client.hpp"
 #include <tinyxml2.h>
-#include <cassert>
+#include <cstdlib>
+#include <iostream>
+#define ALWAYS_ASSERT(cond) do { if (!(cond)) { std::cerr << "Assertion failed: " << #cond << std::endl; std::abort(); } } while(0)
 #include <iostream>
 
 void test_json_to_xmlrpc() {
@@ -9,23 +11,23 @@ void test_json_to_xmlrpc() {
     
     json j_str = "hello <world>&";
     std::string xml_str = dummy.build_xmlrpc_request("test", {j_str});
-    assert(xml_str.find("<value><string>hello &lt;world&gt;&amp;</string></value>") != std::string::npos);
+    ALWAYS_ASSERT(xml_str.find("<value><string>hello &lt;world&gt;&amp;</string></value>") != std::string::npos);
 
     json j_int = 42;
     std::string xml_int = dummy.build_xmlrpc_request("test", {j_int});
-    assert(xml_int.find("<value><int>42</int></value>") != std::string::npos);
+    ALWAYS_ASSERT(xml_int.find("<value><int>42</int></value>") != std::string::npos);
 
     json j_bool = true;
     std::string xml_bool = dummy.build_xmlrpc_request("test", {j_bool});
-    assert(xml_bool.find("<value><boolean>1</boolean></value>") != std::string::npos);
+    ALWAYS_ASSERT(xml_bool.find("<value><boolean>1</boolean></value>") != std::string::npos);
 
     json j_arr = json::array({1, "two"});
     std::string xml_arr = dummy.build_xmlrpc_request("test", {j_arr});
-    assert(xml_arr.find("<value><array><data><value><int>1</int></value><value><string>two</string></value></data></array></value>") != std::string::npos);
+    ALWAYS_ASSERT(xml_arr.find("<value><array><data><value><int>1</int></value><value><string>two</string></value></data></array></value>") != std::string::npos);
 
     json j_obj = {{"key", "value"}};
     std::string xml_obj = dummy.build_xmlrpc_request("test", {j_obj});
-    assert(xml_obj.find("<value><struct><member><name>key</name><value><string>value</string></value></member></struct></value>") != std::string::npos);
+    ALWAYS_ASSERT(xml_obj.find("<value><struct><member><name>key</name><value><string>value</string></value></member></struct></value>") != std::string::npos);
 }
 
 void test_parse_xmlrpc_value() {
@@ -62,12 +64,12 @@ void test_parse_xmlrpc_value() {
     
     nlohmann::json j = dummy.parse_xmlrpc_value(doc.FirstChildElement("value"));
     
-    assert(j.is_object());
-    assert(j["name"] == "John Doe");
-    assert(j["age"] == 30);
-    assert(j["scores"].is_array());
-    assert(j["scores"][0] == 95.5);
-    assert(j["scores"][1] == true);
+    ALWAYS_ASSERT(j.is_object());
+    ALWAYS_ASSERT(j["name"] == "John Doe");
+    ALWAYS_ASSERT(j["age"] == 30);
+    ALWAYS_ASSERT(j["scores"].is_array());
+    ALWAYS_ASSERT(j["scores"][0] == 95.5);
+    ALWAYS_ASSERT(j["scores"][1] == true);
 }
 
 int main() {
@@ -76,3 +78,4 @@ int main() {
     std::cout << "Unit tests passed!" << std::endl;
     return 0;
 }
+

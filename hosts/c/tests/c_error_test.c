@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#define ALWAYS_ASSERT(cond) do { if (!(cond)) { fprintf(stderr, "Assertion failed: %s\n", #cond); abort(); } } while(0)
 #include "evoker_client_c.h"
 
 int main() {
@@ -44,10 +46,10 @@ int main() {
         }
 
         evoker_client_t* client = evoker_client_create(plugins_dir, NULL, NULL);
-        assert(client != NULL);
+        ALWAYS_ASSERT(client != NULL);
         
         int started = evoker_client_start_worker(client, "python", dummy_script);
-        assert(started == 0 && "Should fail to start if worker crashes immediately");
+        ALWAYS_ASSERT(started == 0 && "Should fail to start if worker crashes immediately");
         
         evoker_client_destroy(client);
         remove(dummy_script);
@@ -70,7 +72,7 @@ int main() {
         evoker_client_t* client = evoker_client_create(plugins_dir, NULL, NULL);
         
         int started = evoker_client_start_worker(client, "python", dummy_script);
-        assert(started == 0 && "Should fail to start if port is never printed despite flooding");
+        ALWAYS_ASSERT(started == 0 && "Should fail to start if port is never printed despite flooding");
         
         evoker_client_destroy(client);
         remove(dummy_script);
@@ -80,10 +82,11 @@ int main() {
     {
         evoker_client_t* client = evoker_client_create(plugins_dir, NULL, NULL);
         int started = evoker_client_start_worker(client, "this_executable_does_not_exist_123", "dummy");
-        assert(started == 0 && "Should fail when given a bad executable");
+        ALWAYS_ASSERT(started == 0 && "Should fail when given a bad executable");
         evoker_client_destroy(client);
     }
 
     printf("C Error recovery tests passed!\n");
     return 0;
 }
+

@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#define ALWAYS_ASSERT(cond) do { if (!(cond)) { fprintf(stderr, "Assertion failed: %s\n", #cond); abort(); } } while(0)
 #include "evoker_client_c.h"
 
 int main() {
@@ -40,22 +42,22 @@ int main() {
 #endif
 
     evoker_client_t* client = evoker_client_create(plugins_dir, NULL, NULL);
-    assert(client != NULL);
+    ALWAYS_ASSERT(client != NULL);
 
     printf("Starting worker...\n");
     int started = evoker_client_start_worker(client, "python", worker_script);
-    assert(started == 1);
+    ALWAYS_ASSERT(started == 1);
 
     printf("Scanning...\n");
     char* manifest = evoker_client_scan(client);
-    assert(manifest != NULL);
-    assert(strstr(manifest, "test_plugin") != NULL);
+    ALWAYS_ASSERT(manifest != NULL);
+    ALWAYS_ASSERT(strstr(manifest, "test_plugin") != NULL);
     evoker_client_free_string(manifest);
 
     printf("Invoking...\n");
     char* result = evoker_client_invoke(client, "test_plugin", "hello_world", "{\"name\": \"C Developer\"}");
-    assert(result != NULL);
-    assert(strstr(result, "Hello, C Developer!") != NULL);
+    ALWAYS_ASSERT(result != NULL);
+    ALWAYS_ASSERT(strstr(result, "Hello, C Developer!") != NULL);
     evoker_client_free_string(result);
 
     evoker_client_destroy(client);
@@ -63,3 +65,4 @@ int main() {
 
     return 0;
 }
+

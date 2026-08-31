@@ -1,5 +1,7 @@
 #include <iostream>
-#include <cassert>
+#include <cstdlib>
+#include <iostream>
+#define ALWAYS_ASSERT(cond) do { if (!(cond)) { std::cerr << "Assertion failed: " << #cond << std::endl; std::abort(); } } while(0)
 #include <filesystem>
 #include "evoker_client.hpp"
 
@@ -34,16 +36,17 @@ int main() {
     
     std::cout << "Starting C++ integration test..." << std::endl;
     bool started = client.start_worker("python", worker_script);
-    assert(started && "Failed to start worker");
+    ALWAYS_ASSERT(started && "Failed to start worker");
 
     auto manifest = client.scan();
-    assert(manifest.contains("test_plugin") && "Scan did not return test_plugin");
+    ALWAYS_ASSERT(manifest.contains("test_plugin") && "Scan did not return test_plugin");
 
     nlohmann::json kwargs = {{"name", "C++ Developer"}};
     auto result = client.invoke("test_plugin", "hello_world", kwargs);
     
-    assert(result.is_string() && result.get<std::string>() == "Hello, C++ Developer!");
+    ALWAYS_ASSERT(result.is_string() && result.get<std::string>() == "Hello, C++ Developer!");
 
     std::cout << "Integration test passed successfully!" << std::endl;
     return 0;
 }
+

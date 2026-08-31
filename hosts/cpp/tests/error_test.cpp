@@ -1,5 +1,7 @@
 #include <iostream>
-#include <cassert>
+#include <cstdlib>
+#include <iostream>
+#define ALWAYS_ASSERT(cond) do { if (!(cond)) { std::cerr << "Assertion failed: " << #cond << std::endl; std::abort(); } } while(0)
 #include <filesystem>
 #include <fstream>
 #include "evoker_client.hpp"
@@ -37,7 +39,7 @@ int main() {
 
         evoker::PluginClient client(plugins_dir.string());
         bool started = client.start_worker("python", dummy_script.string());
-        assert(!started && "Should fail to start if worker crashes immediately");
+        ALWAYS_ASSERT(!started && "Should fail to start if worker crashes immediately");
         
         std::filesystem::remove(dummy_script);
     }
@@ -54,7 +56,7 @@ int main() {
 
         evoker::PluginClient client(plugins_dir.string());
         bool started = client.start_worker("python", dummy_script.string());
-        assert(!started && "Should fail to start if port is never printed despite flooding");
+        ALWAYS_ASSERT(!started && "Should fail to start if port is never printed despite flooding");
         
         std::filesystem::remove(dummy_script);
     }
@@ -63,9 +65,10 @@ int main() {
     {
         evoker::PluginClient client(plugins_dir.string());
         bool started = client.start_worker("this_executable_does_not_exist_123", "dummy");
-        assert(!started && "Should fail when given a bad executable");
+        ALWAYS_ASSERT(!started && "Should fail when given a bad executable");
     }
 
     std::cout << "Error recovery tests passed!" << std::endl;
     return 0;
 }
+

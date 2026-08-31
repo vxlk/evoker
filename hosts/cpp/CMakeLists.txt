@@ -70,3 +70,11 @@ target_compile_definitions(cpp_fuzz_test PRIVATE EVOKER_CLIENT_TESTING)
 
 add_executable(cpp_error_test tests/error_test.cpp)
 target_link_libraries(cpp_error_test PRIVATE evoker_host)
+
+
+enable_testing()
+add_test(NAME integration_test COMMAND integration_test)
+add_test(NAME cpp_unit_tests COMMAND cpp_unit_tests)
+add_test(NAME cpp_fuzz_test COMMAND cpp_fuzz_test)
+add_test(NAME cpp_error_test COMMAND cpp_error_test)
+

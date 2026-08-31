@@ -23,3 +23,9 @@ target_link_libraries(c_error_test PRIVATE evoker_client_c)
 # Examples
 add_executable(c_basic_host examples/basic_host.c)
 target_link_libraries(c_basic_host PRIVATE evoker_client_c)
+
+
+enable_testing()
+add_test(NAME c_integration_test COMMAND c_integration_test)
+add_test(NAME c_error_test COMMAND c_error_test)
+

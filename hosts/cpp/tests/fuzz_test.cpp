@@ -1,5 +1,7 @@
 #include "evoker_client.hpp"
-#include <cassert>
+#include <cstdlib>
+#include <iostream>
+#define ALWAYS_ASSERT(cond) do { if (!(cond)) { std::cerr << "Assertion failed: " << #cond << std::endl; std::abort(); } } while(0)
 #include <iostream>
 #include <random>
 
@@ -21,13 +23,13 @@ void test_fuzz_malformed_xml() {
     // Test 1: Totally invalid XML
     try {
         dummy.parse_xmlrpc_response("<<<>>>not xml");
-        assert(false && "Should have thrown on invalid XML");
+        ALWAYS_ASSERT(false && "Should have thrown on invalid XML");
     } catch (const std::runtime_error&) {}
     
     // Test 2: Valid XML, missing methodResponse
     try {
         dummy.parse_xmlrpc_response("<someOtherTag></someOtherTag>");
-        assert(false && "Should have thrown on missing methodResponse");
+        ALWAYS_ASSERT(false && "Should have thrown on missing methodResponse");
     } catch (const std::runtime_error&) {}
 
     // Test 3: XML Fault
@@ -45,10 +47,10 @@ void test_fuzz_malformed_xml() {
         </methodResponse>
         )";
         dummy.parse_xmlrpc_response(fault_xml);
-        assert(false && "Should have thrown XML-RPC fault");
+        ALWAYS_ASSERT(false && "Should have thrown XML-RPC fault");
     } catch (const std::runtime_error& e) {
         std::string err = e.what();
-        assert(err.find("Too many parameters") != std::string::npos);
+        ALWAYS_ASSERT(err.find("Too many parameters") != std::string::npos);
     }
     
     // Test 4: Random string junk in valid structure (property test)
@@ -95,3 +97,4 @@ int main() {
     std::cout << "Fuzz & Security tests passed!" << std::endl;
     return 0;
 }
+
