@@ -13,6 +13,8 @@ FetchContent_Declare(
     httplib
     URL https://github.com/yhirose/cpp-httplib/archive/refs/tags/v0.14.1.tar.gz
 )
+set(HTTPLIB_REQUIRE_OPENSSL ON)
+set(CPPHTTPLIB_OPENSSL_SUPPORT ON)
 FetchContent_MakeAvailable(httplib)
 
 # Fetch tinyxml2
