@@ -2,8 +2,25 @@ import sys
 import logging
 import os
 import json
-from xmlrpc.server import SimpleXMLRPCServer
+import socketserver
+from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from pathlib import Path
+
+class AuthXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
+    def parse_request(self):
+        if super().parse_request():
+            expected_token = os.environ.get("EVOKER_AUTH_TOKEN")
+            if expected_token:
+                auth_token = self.headers.get("X-Evoker-Auth")
+                if auth_token != expected_token:
+                    self.send_error(401, "Unauthorized")
+                    return False
+            return True
+        return False
+
+class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
+    pass
+
 from plugin_host.manager import PluginManager, PrefixStrategy, ExactMatchStrategy
 
 logger = logging.getLogger(__name__)
@@ -46,6 +63,16 @@ class PluginWorkerRPC:
         self.manager = PluginManager(strategies=strategies)
         self.plugins_dir = plugins_dir
         self.actions_manifest = {}
+        self.plugins_mtimes = {}
+
+    def reload_plugin(self, plugin_name: str) -> bool:
+        plugin_dir = self.plugins_dir / plugin_name
+        if plugin_dir.exists() and plugin_dir.is_dir():
+            actions = self.manager.load_plugin(plugin_dir)
+            if actions is not None:
+                self.plugins_mtimes[plugin_name] = plugin_dir.stat().st_mtime
+                return True
+        return False
 
     def scan(self) -> dict:
         """Scans the plugin directory and returns a manifest of available actions."""
@@ -57,8 +84,14 @@ class PluginWorkerRPC:
             if not item.is_dir():
                 continue
                 
-            actions = self.manager.load_plugin(item)
-            if actions:
+            mtime = item.stat().st_mtime
+            if item.name in self.manager.plugins and self.plugins_mtimes.get(item.name) == mtime:
+                actions = self.manager.plugins[item.name]["actions"]
+            else:
+                actions = self.manager.load_plugin(item)
+                self.plugins_mtimes[item.name] = mtime
+
+            if actions is not None:
                 # Serialize to basic types for XML-RPC
                 manifest[item.name] = {
                     name: {
@@ -84,6 +117,21 @@ class PluginWorkerRPC:
             
         action = plugin["actions"][action_name]
         
+        # Coerce kwargs based on signature_info
+        for k, param_info in action.signature_info["parameters"].items():
+            if k in kwargs:
+                t = param_info["type"]
+                v = kwargs[k]
+                try:
+                    if t == "int" and not isinstance(v, int): kwargs[k] = int(v)
+                    elif t == "float" and not isinstance(v, float): kwargs[k] = float(v)
+                    elif t == "str" and not isinstance(v, str): kwargs[k] = str(v)
+                    elif t == "bool" and not isinstance(v, bool):
+                        if isinstance(v, str): kwargs[k] = v.lower() in ("true", "1", "yes")
+                        else: kwargs[k] = bool(v)
+                except (ValueError, TypeError):
+                    pass # Let the plugin handle the error
+
         try:
             return action.func(**kwargs)
         except Exception as e:
@@ -92,7 +140,7 @@ class PluginWorkerRPC:
             raise
 
 def start_worker(plugins_dir: str, port: int = 0):
-    server = SimpleXMLRPCServer(("localhost", port), allow_none=True)
+    server = ThreadingXMLRPCServer(("127.0.0.1", port), requestHandler=AuthXMLRPCRequestHandler, allow_none=True)
     actual_port = server.server_address[1]
     
     # Print exactly this string so the parent process can scrape the port

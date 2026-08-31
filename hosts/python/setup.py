@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 
 # Set the desired standalone python version to download here
-PYTHON_VERSION = "3.14"
+PYTHON_VERSION = "3.13"
 
 class CustomBuildPy(build_py):
     def run(self):
@@ -24,7 +24,7 @@ class CustomBuildPy(build_py):
         
         # Build docs
         print("Building documentation...")
-        docs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "doc")
+        docs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "doc")
         if os.path.exists(docs_dir):
             # Using shell=True for Windows npm command resolution
             subprocess.run(["npm", "install"], cwd=docs_dir, shell=True, check=True)
@@ -50,9 +50,6 @@ setup(
     install_requires=[
     ],
     entry_points={
-        'console_scripts': [
-            'evoker-cli=plugin_host.cli:main',
-        ],
         'pyinstaller40': [
             'hook-dirs = plugin_host._pyinstaller:get_hook_dirs',
         ]

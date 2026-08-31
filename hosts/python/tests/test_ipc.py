@@ -6,7 +6,7 @@ def test_worker_ipc(temp_plugins_dir):
     # Create a simple valid plugin
     plugin_dir = temp_plugins_dir / "math_plugin"
     plugin_dir.mkdir(parents=True)
-    (plugin_dir / "manifest.json").write_text('{"name": "math"}', encoding="utf-8")
+    (plugin_dir / "manifest.json").write_text('{"name": "math_plugin"}', encoding="utf-8")
     
     init_content = """
 def add_numbers(a: int, b: int) -> int:

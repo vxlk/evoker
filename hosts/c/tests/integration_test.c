@@ -19,8 +19,15 @@ int main() {
             src_dir = "hosts/python/src";
             fclose(f);
         } else {
-            plugins_dir = "../test_assets/plugins";
-            src_dir = "../python/src";
+            f = fopen("../../../test_assets/plugins/test_plugin/manifest.json", "r");
+            if (f) {
+                plugins_dir = "../../../test_assets/plugins";
+                src_dir = "../../../python/src";
+                fclose(f);
+            } else {
+                plugins_dir = "../test_assets/plugins";
+                src_dir = "../python/src";
+            }
         }
     } else {
         fclose(f);

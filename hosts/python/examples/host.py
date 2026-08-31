@@ -6,8 +6,10 @@ import pyarrow as pa
 is_frozen = getattr(sys, "frozen", False)
 if is_frozen:
     base_dir = Path(sys._MEIPASS)
+    host_api_dir = base_dir / "injected" / "host_api"
 else:
     base_dir = Path(__file__).parent
+    host_api_dir = base_dir / "host_api"
 
 # Ensure the Evoker src is in the python path (only when not frozen)
 if not is_frozen:
@@ -15,7 +17,6 @@ if not is_frozen:
     sys.path.insert(0, str(evoker_src))
 
 # Add host_api to python path so host can use it natively
-host_api_dir = base_dir / "host_api"
 if str(host_api_dir.parent) not in sys.path:
     sys.path.insert(0, str(host_api_dir.parent))
 

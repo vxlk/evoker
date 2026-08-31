@@ -8,6 +8,9 @@ extern "C" {
 
 typedef struct evoker_client_t evoker_client_t;
 
+// Returns the last error message for the current thread, or NULL if no error occurred.
+const char* evoker_last_error();
+
 // Creates a new client. Returns NULL on failure.
 // `strategies_json` and `injected_packages_json` can be NULL.
 evoker_client_t* evoker_client_create(const char* plugins_dir, 

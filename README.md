@@ -66,7 +66,7 @@ For a comprehensive, full-system overview of how to build a Evoker application w
 
 👉 **[Evoker Example Host Repository](https://github.com/vxlk/evoker-example)**
 
-You can also see the local [examples/](file:///c:/Users/small/Desktop/projects/Evoker/examples/README.md) directory for a simpler "Hello World" demonstration of how to boot a `PluginClient`.
+You can also see the local [examples/README.md](examples/README.md) directory for a simpler "Hello World" demonstration of how to boot a `PluginClient`.
 
 ## Documentation
 
@@ -91,7 +91,6 @@ Evoker includes a `dev.py` utility script for streamlining local development tas
 * `python dev.py docs`: Builds the static Docusaurus site in the `doc/` directory.
 * `python dev.py test`: Activates the virtual environment and runs the test suite using `pytest`.
 * `python dev.py run-example`: Activates the virtual environment and runs the `examples/host.py` script.
-* `python dev.py build-release`: Bundles all plugin dependencies dynamically and builds the PyInstaller release bundle via `host.spec`.
 
 ## PyInstaller Packaging
 

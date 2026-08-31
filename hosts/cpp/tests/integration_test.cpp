@@ -15,6 +15,9 @@ int main() {
         if (std::filesystem::exists(current / "hosts" / "test_assets" / "plugins")) {
             plugins_dir = current / "hosts" / "test_assets" / "plugins";
             src_dir = current / "hosts" / "python" / "src";
+        } else if (std::filesystem::exists(current / ".." / ".." / ".." / "test_assets" / "plugins")) {
+            plugins_dir = current / ".." / ".." / ".." / "test_assets" / "plugins";
+            src_dir = current / ".." / ".." / ".." / "python" / "src";
         } else {
             plugins_dir = current / ".." / "test_assets" / "plugins";
             src_dir = current / ".." / "python" / "src";

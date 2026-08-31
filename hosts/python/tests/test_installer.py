@@ -60,7 +60,7 @@ def test_manager_skips_on_install_failure(temp_plugins_dir, caplog):
     plugin_dir = temp_plugins_dir / "bad_deps_plugin"
     plugin_dir.mkdir(parents=True)
     
-    (plugin_dir / "manifest.json").write_text('{"name": "test"}', encoding="utf-8")
+    (plugin_dir / "manifest.json").write_text('{"name": "bad_deps_plugin"}', encoding="utf-8")
     (plugin_dir / "__init__.py").write_text("def hello(): pass", encoding="utf-8")
     (plugin_dir / "requirements.txt").write_text("this_package_does_not_exist_12345", encoding="utf-8")
     

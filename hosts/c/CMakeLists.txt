@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # We can just include the cpp project
-add_subdirectory(../cpp ../cpp/build)
+add_subdirectory(../cpp ${CMAKE_CURRENT_BINARY_DIR}/cpp_build)
 
 add_library(evoker_client_c src/evoker_client_c.cpp)
 target_include_directories(evoker_client_c PUBLIC include)

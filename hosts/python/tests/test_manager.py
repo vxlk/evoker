@@ -26,13 +26,13 @@ def test_invalid_manifest(temp_plugins_dir, manager, caplog):
     assert "Invalid manifest.json" in caplog.text
 
 def test_missing_init(temp_plugins_dir, manager, caplog):
-    plugin_dir = create_plugin(temp_plugins_dir, "no_init", manifest_content='{"name": "test"}')
+    plugin_dir = create_plugin(temp_plugins_dir, "no_init", manifest_content='{"name": "no_init"}')
     actions = manager.load_plugin(plugin_dir)
     assert actions is None
     assert "Missing __init__.py" in caplog.text
 
 def test_syntax_error(temp_plugins_dir, manager, caplog):
-    plugin_dir = create_plugin(temp_plugins_dir, "syntax_err", manifest_content='{"name": "test"}', init_content="def hello() pass") # Missing colon
+    plugin_dir = create_plugin(temp_plugins_dir, "syntax_err", manifest_content='{"name": "syntax_err"}', init_content="def hello() pass") # Missing colon
     actions = manager.load_plugin(plugin_dir)
     assert actions is None
     assert "Error executing plugin syntax_err" in caplog.text
@@ -48,7 +48,7 @@ def _private_action():
 def on_start(app_context):
     pass
 """
-    plugin_dir = create_plugin(temp_plugins_dir, "valid_plugin", manifest_content='{"name": "test"}', init_content=init_content)
+    plugin_dir = create_plugin(temp_plugins_dir, "valid_plugin", manifest_content='{"name": "valid_plugin"}', init_content=init_content)
     actions = manager.load_plugin(plugin_dir)
     
     assert actions is not None
@@ -73,7 +73,7 @@ def test_keyword_signature_mismatch(temp_plugins_dir, manager, caplog):
 def on_start(wrong_arg: str): # Should be app_context
     pass
 """
-    plugin_dir = create_plugin(temp_plugins_dir, "bad_keyword", manifest_content='{"name": "test"}', init_content=init_content)
+    plugin_dir = create_plugin(temp_plugins_dir, "bad_keyword", manifest_content='{"name": "bad_keyword"}', init_content=init_content)
     actions = manager.load_plugin(plugin_dir)
     
     assert actions is not None
@@ -85,7 +85,7 @@ def test_untyped_argument_warning(temp_plugins_dir, manager, caplog):
 def untyped_action(some_arg):
     pass
 """
-    plugin_dir = create_plugin(temp_plugins_dir, "untyped_plugin", manifest_content='{"name": "test"}', init_content=init_content)
+    plugin_dir = create_plugin(temp_plugins_dir, "untyped_plugin", manifest_content='{"name": "untyped_plugin"}', init_content=init_content)
     with caplog.at_level(logging.WARNING):
         actions = manager.load_plugin(plugin_dir)
         
@@ -106,7 +106,7 @@ def context_menu_action_world():
 def normal_action():
     pass
 """
-    plugin_dir = create_plugin(temp_plugins_dir, "strategy_plugin", manifest_content='{"name": "test"}', init_content=init_content)
+    plugin_dir = create_plugin(temp_plugins_dir, "strategy_plugin", manifest_content='{"name": "strategy_plugin"}', init_content=init_content)
     actions = manager.load_plugin(plugin_dir)
     
     assert actions is not None

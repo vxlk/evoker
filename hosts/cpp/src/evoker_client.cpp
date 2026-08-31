@@ -5,8 +5,10 @@
 #include <tinyxml2.h>
 #include <sstream>
 #include <httplib.h>
-#include <reproc++/reproc.hpp>
 #include <reproc++/drain.hpp>
+#include <filesystem>
+#include <cmath>
+#include <future>
 
 namespace evoker {
 
@@ -23,11 +25,29 @@ static std::string xmlrpc_escape(const std::string& str) {
 
 static std::string json_to_xmlrpc(const nlohmann::json& j) {
     if (j.is_string()) {
-        return "<value><string>" + xmlrpc_escape(j.get<std::string>()) + "</string></value>";
+        std::string s = j.get<std::string>();
+        std::string clean;
+        for (char c : s) {
+            if (c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t') {
+                clean += "&#x" + std::to_string(static_cast<int>(c)) + ";";
+            } else {
+                clean += c;
+            }
+        }
+        return "<value><string>" + xmlrpc_escape(clean) + "</string></value>";
     } else if (j.is_number_integer()) {
-        return "<value><int>" + std::to_string(j.get<int>()) + "</int></value>";
+        int64_t val = j.get<int64_t>();
+        if (val > 2147483647LL || val < -2147483648LL) {
+            return "<value><i8>" + std::to_string(val) + "</i8></value>";
+        } else {
+            return "<value><int>" + std::to_string(val) + "</int></value>";
+        }
     } else if (j.is_number_float()) {
-        return "<value><double>" + std::to_string(j.get<double>()) + "</double></value>";
+        double val = j.get<double>();
+        if (std::isnan(val)) {
+            return "<value><double>NaN</double></value>";
+        }
+        return "<value><double>" + std::to_string(val) + "</double></value>";
     } else if (j.is_boolean()) {
         return "<value><boolean>" + std::string(j.get<bool>() ? "1" : "0") + "</boolean></value>";
     } else if (j.is_array()) {
@@ -100,8 +120,35 @@ static std::string bootstrap_python() {
     std::filesystem::create_directories(target_dir);
     std::cout << "Bootstrapping Python for Evoker..." << std::endl;
 
-    // Use a hardcoded known URL for reliability in C++ to avoid needing a JSON parser for the github API here
-    std::string download_url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260825/cpython-3.13.15%2B20260825-" + triple + "-install_only.tar.gz";
+    std::string download_url;
+    {
+        httplib::Client cli("https://api.github.com");
+        cli.set_follow_location(true);
+        // GitHub API requires a User-Agent header
+        httplib::Headers headers = {
+            {"User-Agent", "Evoker-Client/1.0"}
+        };
+        auto res = cli.Get("/repos/astral-sh/python-build-standalone/releases/latest", headers);
+        if (res && res->status == 200) {
+            try {
+                nlohmann::json release = nlohmann::json::parse(res->body);
+                for (const auto& asset : release["assets"]) {
+                    std::string name = asset["name"].get<std::string>();
+                    if (name.find("cpython-3.13") != std::string::npos && 
+                        name.find(triple) != std::string::npos && 
+                        name.find("install_only") != std::string::npos) {
+                        download_url = asset["browser_download_url"].get<std::string>();
+                        break;
+                    }
+                }
+            } catch (...) {}
+        }
+    }
+    
+    if (download_url.empty()) {
+        std::cerr << "Failed to find latest python release via GitHub API" << std::endl;
+        return "";
+    }
     std::filesystem::path archive_path = evoker_dir / "python.tar.gz";
 
     std::cout << "Downloading " << download_url << " ..." << std::endl;
@@ -135,6 +182,10 @@ static std::string bootstrap_python() {
 }
 
 bool PluginClient::start_worker(const std::string& python_exe, const std::string& worker_script) {
+    if (m_running) {
+        stop_worker();
+    }
+
     std::string actual_python = python_exe;
     if (actual_python.empty() || actual_python == "bootstrap") {
         actual_python = bootstrap_python();
@@ -199,19 +250,24 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
         return line;
     };
 
-    for (int i = 0; i < 50; ++i) {
-        std::string line = read_line();
-        if (line.empty()) {
-            break;
-        }
-        
-        if (line.rfind("RPC_PORT:", 0) == 0) { // starts_with
-            try {
-                m_port = std::stoi(line.substr(9));
-                found_port = true;
+    auto read_port_future = std::async(std::launch::async, [&]() {
+        for (int i = 0; i < 50; ++i) {
+            std::string line = read_line();
+            if (line.empty()) {
                 break;
-            } catch (...) {}
+            }
+            if (line.rfind("RPC_PORT:", 0) == 0) {
+                try {
+                    return std::stoi(line.substr(9));
+                } catch (...) {}
+            }
         }
+        return 0;
+    });
+
+    if (read_port_future.wait_for(std::chrono::seconds(5)) == std::future_status::ready) {
+        m_port = read_port_future.get();
+        if (m_port != 0) found_port = true;
     }
 
     if (!found_port) {
@@ -262,13 +318,26 @@ nlohmann::json PluginClient::parse_xmlrpc_value(const void* xml_node_ptr) {
         return nlohmann::json(text ? text : "");
     } else if (type == "int" || type == "i4") {
         const char* text = child->GetText();
-        return nlohmann::json(text ? std::stoi(text) : 0);
+        try { return nlohmann::json(text ? std::stoi(text) : 0); } catch (...) { return nlohmann::json(0); }
+    } else if (type == "i8") {
+        const char* text = child->GetText();
+        try { return nlohmann::json(text ? std::stoll(text) : 0LL); } catch (...) { return nlohmann::json(0LL); }
     } else if (type == "double") {
         const char* text = child->GetText();
-        return nlohmann::json(text ? std::stod(text) : 0.0);
+        if (text) {
+            std::string t = text;
+            if (t == "NaN" || t == "nan") return nlohmann::json(std::numeric_limits<double>::quiet_NaN());
+            try { return nlohmann::json(std::stod(t)); } catch (...) { return nlohmann::json(0.0); }
+        }
+        return nlohmann::json(0.0);
     } else if (type == "boolean") {
         const char* text = child->GetText();
         return nlohmann::json(text && std::string(text) == "1");
+    } else if (type == "nil") {
+        return nlohmann::json();
+    } else if (type == "base64" || type == "dateTime.iso8601") {
+        const char* text = child->GetText();
+        return nlohmann::json(text ? text : "");
     } else if (type == "array") {
         nlohmann::json arr = nlohmann::json::array();
         const tinyxml2::XMLElement* data = child->FirstChildElement("data");

@@ -69,6 +69,9 @@ class PluginManager:
                 manifest = json.load(f)
             if not isinstance(manifest, dict):
                 raise ValueError("Manifest must be a JSON object")
+            if manifest.get("name") != plugin_dir.name:
+                logger.warning(f"Skipping {plugin_dir}: Manifest name '{manifest.get('name')}' does not match directory name.")
+                return None
         except (json.JSONDecodeError, ValueError):
             logger.warning(f"Skipping {plugin_dir}: Invalid manifest.json")
             return None
@@ -84,13 +87,15 @@ class PluginManager:
             logger.warning(f"Skipping {plugin_dir}: Dependency installation failed.")
             return None
 
-        # Standard dynamic load
-        spec = importlib.util.spec_from_file_location(plugin_dir.name, init_path)
+        # Namespace the module to avoid collisions
+        module_name = f"evoker_plugins.{plugin_dir.name}"
+        spec = importlib.util.spec_from_file_location(module_name, init_path)
         if spec is None or spec.loader is None:
             logger.warning(f"Skipping {plugin_dir}: Failed to create module spec")
             return None
 
         module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
         
         # Inject to path for local imports within the plugin
         sys.path.insert(0, str(plugin_dir))
@@ -113,6 +118,18 @@ class PluginManager:
             
             if site_packages and site_packages.exists():
                 if str(site_packages) not in sys.path:
+                    # Detect dependency collisions with previously loaded plugins
+                    for item in site_packages.iterdir():
+                        if item.name.startswith('.') or item.name.startswith('__') or item.name.endswith('.dist-info') or item.name.endswith('.egg-info'):
+                            continue
+                        pkg_name = item.stem if item.is_file() else item.name
+                        if pkg_name in sys.modules:
+                            mod = sys.modules[pkg_name]
+                            if hasattr(mod, '__file__') and mod.__file__ and str(site_packages) not in mod.__file__:
+                                logger.error(f"Plugin {plugin_dir.name} dependency collision: '{pkg_name}' already loaded from {mod.__file__}")
+                                sys.modules.pop(module_name, None)
+                                return None
+                    
                     sys.path.insert(1, str(site_packages))
                     
         try:
@@ -136,6 +153,8 @@ class PluginManager:
         for name, func in inspect.getmembers(module, inspect.isfunction):
             if name.startswith("_"):
                 continue
+            if getattr(func, '__module__', None) != module.__name__:
+                continue
 
             sig = inspect.signature(func)
             
@@ -145,14 +164,14 @@ class PluginManager:
                 if param_name == 'self':
                     continue
                 type_name = "str" # Default fallback
-                if param.annotation != inspect.Parameter.empty:
+                if param.annotation is not inspect.Parameter.empty:
                     type_name = getattr(param.annotation, "__name__", str(param.annotation))
                 else:
                     logger.warning(f"Argument '{param_name}' in action '{name}' lacks type hint. Defaulting to str.")
                 
                 sig_info["parameters"][param_name] = {
                     "type": type_name,
-                    "required": param.default == inspect.Parameter.empty
+                    "required": param.default is inspect.Parameter.empty
                 }
 
             is_keyword = False

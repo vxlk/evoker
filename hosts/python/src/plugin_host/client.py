@@ -5,6 +5,12 @@ import sys
 import json
 from pathlib import Path
 from typing import Optional, List, Dict, Any
+import threading
+import queue
+
+class WorkerDiedError(Exception):
+    pass
+
 
 class PluginClient:
     def __init__(self, plugins_dir: Path, strategies: Optional[List[Dict[str, Any]]] = None, injected_packages: Optional[List[Path]] = None):
@@ -13,6 +19,8 @@ class PluginClient:
         self.injected_packages = injected_packages
         self.worker_process = None
         self.proxy = None
+        self.lock = threading.Lock()
+        self.auth_token = None
         
     def start_worker(self):
         worker_script = Path(__file__).parent / "worker.py"
@@ -60,6 +68,11 @@ class PluginClient:
             
         if self.injected_packages is not None:
             env["EVOKER_INJECTED_PACKAGES"] = json.dumps([str(p.resolve()) for p in self.injected_packages])
+            
+        import os
+        self.auth_token = os.urandom(16).hex()
+        env["EVOKER_AUTH_TOKEN"] = self.auth_token
+
         
         # Determine which python executable to use.
         # Check if any plugin in plugins_dir has a .venv we can use, 
@@ -68,7 +81,7 @@ class PluginClient:
         
         # 1. Check for a .venv in any of the plugins
         if self.plugins_dir.exists():
-            for plugin_dir in self.plugins_dir.iterdir():
+            for plugin_dir in sorted(self.plugins_dir.iterdir()):
                 if plugin_dir.is_dir():
                     if os.name == "nt":
                         venv_exe = plugin_dir / ".venv" / "Scripts" / "python.exe"
@@ -116,41 +129,74 @@ class PluginClient:
         port = None
         start_time = time.time()
         output_lines = []
+        
+        q = queue.Queue()
+        def read_port():
+            for line in iter(self.worker_process.stdout.readline, ''):
+                q.put(line)
+        t = threading.Thread(target=read_port, daemon=True)
+        t.start()
+        
         while time.time() - start_time < 5:
-            line = self.worker_process.stdout.readline()
-            if not line:
-                break
-            output_lines.append(line)
-            if line.startswith("RPC_PORT:"):
-                port = int(line.strip().split(":")[1])
-                break
+            try:
+                line = q.get(timeout=0.5)
+                output_lines.append(line)
+                if line.startswith("RPC_PORT:"):
+                    port = int(line.strip().split(":")[1])
+                    break
+            except queue.Empty:
+                if self.worker_process.poll() is not None:
+                    break
                 
         if port is None:
             self.stop_worker()
             raise RuntimeError(f"Failed to start worker or get port.\npython_exe: {python_exe} (exists: {Path(python_exe).exists()})\nworker_script: {worker_script} (exists: {Path(worker_script).exists()})\nWorker output:\n{''.join(output_lines)}")
             
-        import threading
         def forward_stdout():
-            if self.worker_process and self.worker_process.stdout:
-                for line in iter(self.worker_process.stdout.readline, ''):
+            while True:
+                try:
+                    line = q.get(timeout=1.0)
                     sys.stdout.write(line)
+                except queue.Empty:
+                    if self.worker_process and self.worker_process.poll() is not None:
+                        break
+                        
         threading.Thread(target=forward_stdout, daemon=True).start()
             
-        self.proxy = xmlrpc.client.ServerProxy(f"http://localhost:{port}")
+        self.proxy = xmlrpc.client.ServerProxy(f"http://127.0.0.1:{port}", headers=(("X-Evoker-Auth", self.auth_token),))
+
         
     def stop_worker(self):
         if self.worker_process:
             self.worker_process.terminate()
-            self.worker_process.wait(timeout=2)
+            try:
+                self.worker_process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                self.worker_process.kill()
+                self.worker_process.wait()
             self.worker_process = None
             
+    def restart_worker(self):
+        self.stop_worker()
+        self.start_worker()
+            
+    def _check_worker(self):
+        if self.worker_process and self.worker_process.poll() is not None:
+            rc = self.worker_process.returncode
+            self.worker_process = None
+            raise WorkerDiedError(f"Worker process died unexpectedly (exit code {rc})")
+
     def get_plugins(self):
-        return self.proxy.scan()
+        with self.lock:
+            self._check_worker()
+            return self.proxy.scan()
         
     def run_action(self, plugin_name: str, action_name: str, kwargs: dict):
-        try:
-            return self.proxy.invoke(plugin_name, action_name, kwargs)
-        except xmlrpc.client.Fault:
-            raise
-        except Exception as e:
-            raise ValueError(f"RPC Serialization or Connection Error: {e}")
+        with self.lock:
+            self._check_worker()
+            try:
+                return self.proxy.invoke(plugin_name, action_name, kwargs)
+            except xmlrpc.client.Fault:
+                raise
+            except Exception as e:
+                raise ValueError(f"RPC Serialization or Connection Error: {e}")

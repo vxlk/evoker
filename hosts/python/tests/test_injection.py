@@ -15,7 +15,7 @@ def test_custom_api_injection(temp_plugins_dir, tmp_path):
     # 2. Create a plugin that depends on this injected API
     plugin_dir = temp_plugins_dir / "api_consumer_plugin"
     plugin_dir.mkdir(parents=True)
-    (plugin_dir / "manifest.json").write_text('{"name": "consumer"}', encoding="utf-8")
+    (plugin_dir / "manifest.json").write_text('{"name": "api_consumer_plugin"}', encoding="utf-8")
     
     init_content = """
 from secret_api import get_secret
@@ -56,7 +56,7 @@ def test_multiple_injected_packages(temp_plugins_dir, tmp_path):
     # 2. Create a plugin that imports both
     plugin_dir = temp_plugins_dir / "multi_consumer_plugin"
     plugin_dir.mkdir(parents=True)
-    (plugin_dir / "manifest.json").write_text('{"name": "multi_consumer"}', encoding="utf-8")
+    (plugin_dir / "manifest.json").write_text('{"name": "multi_consumer_plugin"}', encoding="utf-8")
     
     init_content = """
 import mod_a

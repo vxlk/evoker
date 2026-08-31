@@ -35,6 +35,9 @@ add_library(evoker_host src/evoker_client.cpp)
 target_include_directories(evoker_host PUBLIC include)
 target_link_libraries(evoker_host PRIVATE httplib::httplib tinyxml2 reproc++)
 
+add_executable(evoker_cpp_host src/main.cpp)
+target_link_libraries(evoker_cpp_host PRIVATE evoker_host)
+
 # Example
 add_executable(basic_host examples/basic_host.cpp)
 target_link_libraries(basic_host PRIVATE evoker_host)

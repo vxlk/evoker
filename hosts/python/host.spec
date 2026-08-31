@@ -8,9 +8,9 @@ a = Analysis(
     datas=[
         ('src/plugin_host', 'src/plugin_host'),
         ('examples/plugins', 'plugins'),
-        ('examples/host_api', 'host_api')
+        ('examples/host_api', 'injected/host_api')
     ],
-    hiddenimports=[],
+    hiddenimports=['xmlrpc.client', 'xmlrpc.server', 'xmlrpc'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

@@ -36,7 +36,7 @@ def cmd_build():
 
 def cmd_docs():
     print("Building documentation...")
-    run_command(["npm", "run", "build"], cwd="doc")
+    run_command(["npm", "run", "build"], cwd="docs")
 
 def cmd_test():
     print("Running tests...")
@@ -48,6 +48,7 @@ def cmd_run_example():
     py_exec = get_venv_python()
     # Unbuffered python output to ensure plugin prints stream correctly
     run_command([str(py_exec), "-u", "examples/host.py"])
+
 
 def cmd_build_release():
     print("Building release bundle...")
@@ -80,6 +81,7 @@ def main():
         cmd_run_example()
     elif args.command == "build-release":
         cmd_build_release()
+
 
 if __name__ == "__main__":
     main()

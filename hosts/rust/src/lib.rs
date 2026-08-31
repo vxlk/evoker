@@ -224,6 +224,17 @@ impl PluginClient {
 
         match rx.recv_timeout(std::time::Duration::from_secs(5)) {
             Ok((Some(port), mut reader)) => {
+                let stderr = child.stderr.take().expect("Failed to open stderr");
+                thread::spawn(move || {
+                    let mut err_reader = BufReader::new(stderr);
+                    let mut l = String::new();
+                    while let Ok(bytes) = err_reader.read_line(&mut l) {
+                        if bytes == 0 { break; }
+                        eprint!("{}", l);
+                        l.clear();
+                    }
+                });
+
                 self.port = Some(port);
                 self.worker_process = Some(child);
 
