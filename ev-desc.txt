@@ -1,0 +1,12 @@
+EV-42MediumAll
+Carriage returns are silently rewritten to newlines in every host
+XML 1.0 §2.11 line-ending normalisation, unmitigated in all four clients
+XML parsers normalise \r\n and lone \r to \n unless the character is escaped as &#13;. No Evoker client escapes it, so any string containing a carriage return arrives changed. Windows text files, HTTP headers, clipboard payloads and CSV fragments all carry \r\n.
+Python host 'a\r\nb' -> 'a\nb' *** CHANGED *** C++ host plugin repr() = 'a\nb' (sent 'a\rb') Rust host plugin repr() = 'a\nb' (sent 'a\rb') control 'a\nb', 'a\tb', 'café 中文 😀', 'a&<>"\'b' all round-trip intact
+Unicode is otherwise clean — emoji, CJK, combining accents and regional-indicator pairs all survive unchanged, in every binding. The corruption is specific to \r.
+Fix Escape \r as &#13; in each client's serialiser (a one-line addition to xmlrpc_escape in C++), and note the behaviour in the wire-contract documentation.
+EV-43MediumAll
+The same control character produces three different behaviours across four bindings
+evoker_client.cpp:29–33 throws; Python and Rust do not validate
+Characters below 0x20 other than tab/LF/CR are illegal in XML 1.0. Only the C++ client checks:
+C++ / C std::invalid_argument: "Control characters are not allowed in XML-RPC strings" (clear, client-side, before any I/O) Python Fault: xml.parsers.expat.ExpatError: not well-formed (invalid token): line 15, column 16 (server-side, after a round trip, cause not named) Rust RPC error: ExpatErr

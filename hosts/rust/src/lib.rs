@@ -5,7 +5,32 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc;
 use std::thread;
-use xmlrpc::{Request, Value};
+use xmlrpc::{Request, Value, Transport};
+
+struct EvokerTransport(reqwest::blocking::RequestBuilder);
+
+impl Transport for EvokerTransport {
+    fn transmit(self, req: &Request) -> Result<Box<dyn std::io::Read + Send>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut buf = Vec::new();
+        req.write_as_xml(&mut buf)?;
+        
+        let xml = String::from_utf8(buf)?;
+        for c in xml.chars() {
+            let code = c as u32;
+            if code < 0x20 && code != 0x09 && code != 0x0A && code != 0x0D {
+                return Err("Control characters are not allowed in XML-RPC strings".into());
+            }
+        }
+        
+        let xml = xml.replace("\r", "&#13;");
+        
+        let res = self.0.body(xml).header("Content-Type", "text/xml").send()?;
+        if !res.status().is_success() {
+            return Err(format!("HTTP error: {}", res.status()).into());
+        }
+        Ok(Box::new(res))
+    }
+}
 
 #[derive(Debug, Serialize)]
 pub struct PrefixStrategy {
@@ -338,7 +363,12 @@ impl PluginClient {
             }
             _ => {
                 let _ = child.kill();
-                Err("Failed to start worker or read port within timeout".to_string())
+                let mut stderr_out = String::new();
+                if let Some(mut stderr) = child.stderr.take() {
+                    use std::io::Read;
+                    let _ = stderr.read_to_string(&mut stderr_out);
+                }
+                Err(format!("Worker failed to start or output port in time. Stderr:\n{}", stderr_out))
             }
         }
     }
@@ -369,7 +399,7 @@ impl PluginClient {
 
     pub fn scan(&self) -> Result<Value, String> {
         let req = Request::new("scan");
-        req.call(self.client().post(&self.get_url()))
+        req.call(EvokerTransport(self.client().post(&self.get_url())))
             .map_err(|e| format!("RPC error: {}", e))
     }
 
@@ -384,7 +414,7 @@ impl PluginClient {
             .arg(action_name)
             .arg(Value::Struct(kwargs));
             
-        req.call(self.client().post(&self.get_url()))
+        req.call(EvokerTransport(self.client().post(&self.get_url())))
             .map_err(|e| format!("RPC error: {}", e))
     }
 }

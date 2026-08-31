@@ -8,6 +8,15 @@ from typing import Optional, List, Dict, Any
 import threading
 import queue
 
+_orig_escape = xmlrpc.client.escape
+def _evoker_escape(s):
+    for c in s:
+        code = ord(c)
+        if code < 0x20 and code not in (0x09, 0x0a, 0x0d):
+            raise ValueError("Control characters are not allowed in XML-RPC strings")
+    return _orig_escape(s).replace('\r', '&#13;')
+xmlrpc.client.escape = _evoker_escape
+
 class WorkerDiedError(Exception):
     pass
 

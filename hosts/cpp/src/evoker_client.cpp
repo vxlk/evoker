@@ -18,6 +18,7 @@ static std::string xmlrpc_escape(const std::string& str) {
         if (c == '<') res += "&lt;";
         else if (c == '>') res += "&gt;";
         else if (c == '&') res += "&amp;";
+        else if (c == '\r') res += "&#13;";
         else res += c;
     }
     return res;
