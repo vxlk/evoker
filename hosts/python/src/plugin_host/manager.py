@@ -163,11 +163,9 @@ class PluginManager:
             for param_name, param in sig.parameters.items():
                 if param_name == 'self':
                     continue
-                type_name = "str" # Default fallback
+                type_name = "unannotated"
                 if param.annotation is not inspect.Parameter.empty:
                     type_name = getattr(param.annotation, "__name__", str(param.annotation))
-                else:
-                    logger.warning(f"Argument '{param_name}' in action '{name}' lacks type hint. Defaulting to str.")
                 
                 sig_info["parameters"][param_name] = {
                     "type": type_name,
