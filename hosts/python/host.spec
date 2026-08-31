@@ -2,11 +2,11 @@
 
 
 a = Analysis(
-    ['examples\\host.py'],
+    ['examples/host.py'],
     pathex=['src'],
     binaries=[],
     datas=[
-        ('src/plugin_host', 'src/plugin_host'),
+        ('src/plugin_host', 'plugin_host'),
         ('examples/plugins', 'plugins'),
         ('examples/host_api', 'injected/host_api')
     ],

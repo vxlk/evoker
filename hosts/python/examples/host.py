@@ -31,7 +31,15 @@ def print_separator(title: str):
 def main():
     print_separator("Welcome to the Evoker Hello World Demo")
     
-    plugins_dir = base_dir / "plugins"
+    # 1. Boot Client with Custom Strategies
+    if is_frozen:
+        plugins_dir = Path(sys.executable).parent / "plugins"
+        if not plugins_dir.exists():
+            import shutil
+            shutil.copytree(base_dir / "plugins", plugins_dir)
+    else:
+        plugins_dir = base_dir / "plugins"
+        
     print(f"[*] Booting PluginClient pointing to: {plugins_dir}")
     
     # 1. Boot Client with Custom Strategies
