@@ -64,6 +64,8 @@ def cmd_build_release():
     run_command([str(py_exec), "-m", "PyInstaller", "host.spec", "--clean"])
 
 def main():
+    import os
+    os.chdir(Path(__file__).parent.absolute())
     parser = argparse.ArgumentParser(description="Development utility script for Evoker")
     parser.add_argument("command", choices=["install", "build", "docs", "test", "run-example", "build-release"])
     

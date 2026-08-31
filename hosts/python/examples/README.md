@@ -6,7 +6,7 @@ This directory contains a foundational "Hello World" application that demonstrat
 
 From the root of the project, execute:
 ```bash
-python dev.py run-example
+python hosts/python/dev.py run-example
 ```
 
 ## What it Demonstrates

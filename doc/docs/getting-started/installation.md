@@ -65,23 +65,23 @@ Evoker provides a root-level `dev.py` script to automate common developer workfl
 
 | Command | Description |
 | :--- | :--- |
-| `python dev.py install` | Creates a local `.venv` (if missing), activates it, and installs Evoker in editable mode with all dev dependencies (`pip install -e .[dev]`). |
-| `python dev.py test` | Runs the full test suite using `pytest` within the isolated development virtual environment. |
-| `python dev.py run-example` | Runs the demonstration application in unbuffered mode (`examples/host.py`), showcasing strategy matching, process isolation, and API injection. |
-| `python dev.py build-release` | Downloads target standalone Python distributions, installs PyInstaller, and builds a release bundle using `host.spec`. |
-| `python dev.py docs` | Runs the Docusaurus production build (`npm run build` in `doc/`) to compile static documentation. |
+| `python hosts/python/dev.py install` | Creates a local `.venv` (if missing), activates it, and installs Evoker in editable mode with all dev dependencies (`pip install -e .[dev]`). |
+| `python hosts/python/dev.py test` | Runs the full test suite using `pytest` within the isolated development virtual environment. |
+| `python hosts/python/dev.py run-example` | Runs the demonstration application in unbuffered mode (`examples/host.py`), showcasing strategy matching, process isolation, and API injection. |
+| `python hosts/python/dev.py build-release` | Downloads target standalone Python distributions, installs PyInstaller, and builds a release bundle using `host.spec`. |
+| `python hosts/python/dev.py docs` | Runs the Docusaurus production build (`npm run build` in `doc/`) to compile static documentation. |
 
 ### Example Usage
 
 ```bash
 # Set up development virtualenv and install dependencies
-python dev.py install
+python hosts/python/dev.py install
 
 # Run the test suite
-python dev.py test
+python hosts/python/dev.py test
 
 # Launch the Hello World demo
-python dev.py run-example
+python hosts/python/dev.py run-example
 ```
 
 ---

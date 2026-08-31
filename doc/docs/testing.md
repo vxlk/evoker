@@ -197,3 +197,40 @@ python -m pytest -v --tb=short
 ```bash
 tox
 ```
+
+## Running Native Client Tests
+
+Evoker includes test suites for the Rust, C++, and C clients to ensure compatibility and stability across languages.
+
+### Rust Client Tests
+
+Run the Rust test suite using Cargo:
+
+```bash
+cd hosts/rust
+cargo test
+```
+
+### C++ Client Tests
+
+Build and run the C++ test suite using CMake and CTest:
+
+```bash
+cd hosts/cpp
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+cd build
+ctest -C Release --output-on-failure
+```
+
+### C Client Tests
+
+Build and run the C test suite using CMake and CTest:
+
+```bash
+cd hosts/c
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+cd build
+ctest -C Release --output-on-failure
+```
