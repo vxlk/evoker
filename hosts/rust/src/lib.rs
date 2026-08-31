@@ -102,10 +102,6 @@ pub fn bootstrap_python() -> Result<PathBuf, String> {
     let _ = std::fs::remove_file(archive_path);
     
     if exe_path.exists() {
-        println!("Installing evoker package...");
-        let _ = Command::new(&exe_path)
-            .args(&["-m", "pip", "install", "evoker"])
-            .status();
         Ok(exe_path)
     } else {
         Err(format!("Python executable not found after extraction at {:?}", exe_path))
@@ -164,6 +160,19 @@ impl PluginClient {
         };
 
         let mut cmd = Command::new(actual_python);
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(parent) = exe_path.parent() {
+                if let Some(existing) = std::env::var_os("PYTHONPATH") {
+                    let mut paths = std::env::split_paths(&existing).collect::<Vec<_>>();
+                    paths.push(parent.to_path_buf());
+                    if let Ok(new_env) = std::env::join_paths(paths) {
+                        cmd.env("PYTHONPATH", new_env);
+                    }
+                } else {
+                    cmd.env("PYTHONPATH", parent);
+                }
+            }
+        }
         cmd.arg("-u"); // unbuffered
         
         if worker_target.ends_with(".py") {

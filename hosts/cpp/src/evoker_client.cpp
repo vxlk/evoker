@@ -169,11 +169,6 @@ static std::string bootstrap_python() {
     std::filesystem::remove(archive_path);
 
     if (std::filesystem::exists(exe_path)) {
-        std::cout << "Installing evoker package..." << std::endl;
-        reproc::process pip;
-        std::vector<std::string> pip_args = {exe_path.string(), "-m", "pip", "install", "evoker"};
-        pip.start(pip_args);
-        pip.wait(reproc::infinite);
         return exe_path.string();
     }
 
@@ -219,6 +214,13 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
         env["EVOKER_INJECTED_PACKAGES"] = j.dump();
     }
     env["EVOKER_AUTH_TOKEN"] = m_token;
+    const char* ppath = getenv("PYTHONPATH");
+    std::string new_ppath = ppath ? std::string(ppath) : "";
+#ifdef _WIN32
+    env["PYTHONPATH"] = new_ppath.empty() ? "." : new_ppath + ";.";
+#else
+    env["PYTHONPATH"] = new_ppath.empty() ? "." : new_ppath + ":.";
+#endif
     if (!env.empty()) {
         options.env.extra = reproc::env(env);
     }
