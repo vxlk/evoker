@@ -50,3 +50,26 @@ def crash_me():
         
     finally:
         host.stop_worker()
+
+def test_ev36_no_pickle_arbitrary_classes(temp_plugins_dir):
+    plugin_dir = temp_plugins_dir / "math_plugin"
+    if not plugin_dir.exists():
+        plugin_dir.mkdir(parents=True)
+        (plugin_dir / "manifest.json").write_text('{"name": "math_plugin"}', encoding="utf-8")
+        (plugin_dir / "__init__.py").write_text("def noop(val): return True", encoding="utf-8")
+        
+    host = PluginClient(temp_plugins_dir)
+    try:
+        host.start_worker()
+        host.get_plugins()
+        
+        class EvilPayload:
+            def __reduce__(self):
+                import os
+                return (os.system, ("echo RCE",))
+                
+        # It should serialize as an empty struct, and NOT execute __reduce__
+        result = host.run_action("math_plugin", "noop", {"val": EvilPayload()})
+        assert result is True
+    finally:
+        host.stop_worker()

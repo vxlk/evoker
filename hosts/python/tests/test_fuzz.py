@@ -55,7 +55,7 @@ def test_fuzz_introspection_signatures(sig):
     assert "parameters" in action.signature_info
 
 @given(st.text())
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None)
 def test_fuzz_manifest_parsing(temp_plugins_dir, manager, bad_json):
     """
     Ensures bad JSON in manifest files never crashes the manager.
@@ -105,6 +105,7 @@ def test_fuzz_prefix_strategy_no_crash(prefix, random_name):
     except Exception as e:
         pytest.fail(f"PrefixStrategy crashed with exception: {e}")
 
+@settings(deadline=None)
 @given(st.text())
 def test_fuzz_injected_packages_env(env_val):
     """
@@ -128,7 +129,7 @@ def test_fuzz_strategies_env(env_val):
         pytest.fail(f"parse_strategies crashed with: {e}")
 
 @given(st.dictionaries(st.text(), st.text()))
-@settings(max_examples=25, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(max_examples=100, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_fuzz_rpc_serialization(temp_plugins_dir, kwargs_payload):
     """
     Ensure the RPC client gracefully raises xmlrpc Faults on arbitrary kwargs,

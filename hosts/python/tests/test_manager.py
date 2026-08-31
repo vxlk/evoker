@@ -91,8 +91,8 @@ def untyped_action(some_arg):
         
     assert actions is not None
     assert "untyped_action" in actions
-    assert "lacks type hint. Defaulting to str." in caplog.text
-    assert actions["untyped_action"].signature_info["parameters"]["some_arg"]["type"] == "str"
+    assert "lacks type hint. Defaulting to unannotated." in caplog.text
+    assert actions["untyped_action"].signature_info["parameters"]["some_arg"]["type"] == "unannotated"
 
 def test_prefix_strategy_matching(temp_plugins_dir):
     manager = PluginManager(strategies=[PrefixStrategy("context_menu_action_")])
