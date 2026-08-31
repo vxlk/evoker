@@ -187,11 +187,13 @@ class PluginClient:
             raise WorkerDiedError(f"Worker process died unexpectedly (exit code {rc})")
 
     def get_plugins(self):
+        """Scans for plugins. Note: PluginClient serialises calls, blocking the calling thread."""
         with self.lock:
             self._check_worker()
             return self.proxy.scan()
         
     def run_action(self, plugin_name: str, action_name: str, kwargs: dict):
+        """Runs a plugin action. Note: PluginClient serialises calls, so a slow plugin will block the calling thread."""
         with self.lock:
             self._check_worker()
             try:
