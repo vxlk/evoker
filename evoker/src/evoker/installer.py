@@ -44,6 +44,10 @@ def install_plugin_deps(plugin_path: Path) -> bool:
     if bundled_python:
         logger.info(f"Using bundled Python at {bundled_python} for {plugin_path.name}")
         base_python_exe = bundled_python
+    elif getattr(sys, "frozen", False):
+        error_msg = f"No bundled Python found for {plugin_path.name}, and host is frozen. Cannot use sys.executable as it would fork bomb."
+        logger.error(error_msg)
+        raise DependencyInstallError(error_msg)
     else:
         logger.info(f"No bundled Python found. Falling back to host Python {sys.executable} for {plugin_path.name}")
         base_python_exe = Path(sys.executable)

@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 import sys
 
+@pytest.mark.slow
 @pytest.mark.skipif(sys.platform != "win32", reason="Integration test currently targets Windows host.exe")
 def test_pyinstaller_build_and_run(tmp_path):
     """
@@ -25,7 +26,7 @@ def test_pyinstaller_build_and_run(tmp_path):
 
     # 2. Run the build (using python dev.py build-release)
     print("Building PyInstaller release bundle...")
-    build_result = subprocess.run(["python", "dev.py", "build-release"], cwd=python_host_dir, capture_output=True, text=True)
+    build_result = subprocess.run(["python", "dev.py", "build-release"], cwd=python_host_dir, capture_output=True, text=True, timeout=600)
     assert build_result.returncode == 0, f"Build failed:\n{build_result.stdout}\n{build_result.stderr}"
     
     # 3. Verify the executable exists
@@ -34,12 +35,25 @@ def test_pyinstaller_build_and_run(tmp_path):
         
     # 4. Run the executable and verify it works
     print("Running compiled host.exe...")
-    run_result = subprocess.run([str(exe_path)], cwd=python_host_dir, capture_output=True, text=True)
     
-    assert run_result.returncode == 0, f"Host execution failed:\n{run_result.stdout}\n{run_result.stderr}"
+    # Run the host executable, which could fork bomb if EV-88 isn't fixed.
+    # On Windows, we can use CREATE_NEW_PROCESS_GROUP and send CTRL_BREAK_EVENT on timeout
+    # Or ideally a Job Object, but CREATE_NEW_PROCESS_GROUP with taskkill is simpler in pure Python stdlib.
+    # We will use subprocess.Popen and taskkill to kill the tree.
+    p = subprocess.Popen([str(exe_path)], cwd=python_host_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        stdout, stderr = p.communicate(timeout=60)
+        returncode = p.returncode
+    except subprocess.TimeoutExpired:
+        subprocess.run(["taskkill", "/F", "/T", "/PID", str(p.pid)], capture_output=True)
+        stdout, stderr = p.communicate()
+        returncode = -1
+        assert False, f"Host execution timed out:\n{stdout}\n{stderr}"
+    
+    assert returncode == 0, f"Host execution failed:\n{stdout}\n{stderr}"
     
     # Verify the host output contains the success messages
-    output = run_result.stdout + "\n" + run_result.stderr
+    output = stdout + "\n" + stderr
     assert "Building them now..." in output, "Expected to see auto-wheel building log."
     assert "Hello World from Plugin via Arrow!" in output, "Missing Arrow IPC (Plugin -> Host) success."
     assert "Hello World from Host via Arrow!" in output, "Missing Arrow IPC (Host -> Plugin) success."
