@@ -8,7 +8,7 @@ import socketserver
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from pathlib import Path
 from typing import Any, List
-from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy
+from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy, PluginStrategy
 
 _AUTH_TOKEN = os.environ.pop("EVOKER_AUTH_TOKEN", None)
 
