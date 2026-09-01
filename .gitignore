@@ -36,20 +36,7 @@ test_venv/
 node_modules/
 
 # Evoker specific generated
-hosts/python/src/plugin_host/docs_html/
-hosts/python/src/plugin_host/pythons/dist/
-*.egg-info/
-hosts/rust/target/
-hosts/c/build/
-hosts/cpp/build/
-hosts/python/build/
-hosts/python/dist/
-hosts/python/.venv/
-hosts/python/.pytest_cache/
-hosts/python/.hypothesis/
-hosts/c/cpp/build/
-hosts/c/.cache/
-hosts/cpp/.cache/
+
 .mypy_cache/
 pip/
 .ruff_cache/
