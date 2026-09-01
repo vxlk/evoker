@@ -69,7 +69,7 @@ class PluginManager:
             return None
 
         try:
-            with open(manifest_path, "r", encoding="utf-8") as f:
+            with open(manifest_path, "r", encoding="utf-8-sig") as f:
                 manifest = json.load(f)
             if not isinstance(manifest, dict):
                 raise ValueError("Manifest must be a JSON object")
