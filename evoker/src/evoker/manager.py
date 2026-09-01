@@ -55,10 +55,11 @@ class PluginManager:
         if "evoker_plugins" not in sys.modules:
             import types
             sys.modules["evoker_plugins"] = types.ModuleType("evoker_plugins")
+        self.strategies: List[PluginStrategy]
         if strategies is None:
-            self.strategies: List[PluginStrategy] = [ExactMatchStrategy("on_start", ["app_context"])]
+            self.strategies = [ExactMatchStrategy("on_start", ["app_context"])]
         else:
-            self.strategies: List[PluginStrategy] = strategies
+            self.strategies = strategies
 
     def load_plugin(self, plugin_dir: Path) -> Optional[Dict[str, PluginAction]]:
         manifest_path = plugin_dir / "manifest.json"

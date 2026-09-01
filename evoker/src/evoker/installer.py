@@ -31,7 +31,7 @@ def install_plugin_deps(plugin_path: Path) -> bool:
     Scans a plugin directory for requirements.txt.
     It will create a .venv using the bundled python interpreter (if available)
     or the host's python interpreter, and install dependencies into it.
-    
+
     Returns True if successful (or nothing to do), raises DependencyInstallError on failure.
     """
     req_file = plugin_path / "requirements.txt"
