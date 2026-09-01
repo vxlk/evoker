@@ -68,11 +68,11 @@ fn ensure_evoker_installed(exe_path: &PathBuf) -> Result<(), String> {
     let evoker_package = repo_path.join("evoker");
     let pip_status = Command::new(exe_path)
         .args(&["-m", "pip", "install", evoker_package.to_str().unwrap()])
-        .status()
+        .output()
         .map_err(|e| e.to_string())?;
         
-    if !pip_status.success() {
-        return Err("Failed to install evoker runtime via pip".to_string());
+    if !pip_status.status.success() {
+        return Err(format!("Failed to install evoker runtime via pip: {}", String::from_utf8_lossy(&pip_status.stderr)));
     }
     
     let import_status_2 = Command::new(exe_path)
@@ -122,6 +122,10 @@ pub fn bootstrap_python() -> Result<PathBuf, String> {
         .output()
         .map_err(|e| format!("Failed to run curl: {}", e))?;
         
+    if !output.status.success() {
+        return Err(format!("curl failed: {}", String::from_utf8_lossy(&output.stderr)));
+    }
+        
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).map_err(|e| e.to_string())?;
     
     let mut download_url = String::new();
@@ -150,21 +154,21 @@ pub fn bootstrap_python() -> Result<PathBuf, String> {
     
     let status = Command::new("curl")
         .args(&["-sL", &download_url, "-o", archive_path.to_str().unwrap()])
-        .status()
+        .output()
         .map_err(|e| e.to_string())?;
         
-    if !status.success() {
-        return Err("Failed to download python".to_string());
+    if !status.status.success() {
+        return Err(format!("Failed to download python: {}", String::from_utf8_lossy(&status.stderr)));
     }
     
     println!("Extracting python...");
     let tar_status = Command::new("tar")
         .args(&["-xf", archive_path.to_str().unwrap(), "-C", target_dir.to_str().unwrap()])
-        .status()
+        .output()
         .map_err(|e| e.to_string())?;
         
-    if !tar_status.success() {
-        return Err("Failed to extract python archive".to_string());
+    if !tar_status.status.success() {
+        return Err(format!("Failed to extract python archive: {}", String::from_utf8_lossy(&tar_status.stderr)));
     }
     
     let _ = std::fs::remove_file(archive_path);
@@ -182,11 +186,11 @@ pub fn bootstrap_python() -> Result<PathBuf, String> {
         let evoker_package = repo_path.join("evoker");
         let pip_status = Command::new(&exe_path)
             .args(&["-m", "pip", "install", evoker_package.to_str().unwrap()])
-            .status()
+            .output()
             .map_err(|e| e.to_string())?;
             
-        if !pip_status.success() {
-            return Err("Failed to install evoker runtime via pip".to_string());
+        if !pip_status.status.success() {
+            return Err(format!("Failed to install evoker runtime via pip: {}", String::from_utf8_lossy(&pip_status.stderr)));
         }
         
         // Verify import succeeds
