@@ -199,7 +199,10 @@ class PluginClient:
                 self.worker_process.wait(timeout=2)
             except subprocess.TimeoutExpired:
                 self.worker_process.kill()
-                self.worker_process.wait()
+                try:
+                    self.worker_process.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    pass
             self.worker_process = None
         self.proxy = None
 
