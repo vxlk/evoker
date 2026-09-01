@@ -23,14 +23,14 @@ graph LR
   Worker2 -->|loads| P3["Plugin C"]
 ```
 
-### Core Philosophy
+### Why Evoker?
 
-Evoker occupies a highly strategic, underserved niche: **Extending native applications with Python's data/AI ecosystem without compromising application stability.**
+Traditional Python plugin systems run third-party code directly in your application's memory space. This leads to severe problems:
+- A plugin that runs out of memory or causes a C-extension segmentation fault will **crash your entire application**.
+- Plugins with conflicting `pip` dependencies will break each other (Dependency Hell).
+- CPU-bound plugin tasks freeze your host application due to the Global Interpreter Lock (GIL).
 
-To achieve this, the framework is driven by three strict architectural principles:
-1. **Stateless Invocation**: Evoker is built around a host-driven, request-response model. By enforcing this paradigm, Evoker forces plugin developers to write clean, modular extensions (microservices) rather than deeply entangled, state-corrupting scripts.
-2. **No Synchronized State**: Many modern microservice and plugin architectures collapse under their own weight because they attempt to synchronize complex state and maintain chatty, two-way communication across boundaries. Evoker avoids this by explicitly restricting communication to simple invocations.
-3. **True Process Isolation**: If a plugin crashes, segfaults, or OOMs, the host application must survive. Plugins are treated as untrusted worker nodes.
+**Evoker solves this** by treating plugins as untrusted worker nodes. Each plugin executes in a dedicated, isolated Python subprocess. Your host application communicates with them seamlessly through simple invocations. If a plugin crashes, your application survives.
 
 ### Native Language Bindings
 
@@ -53,13 +53,14 @@ These native bindings include **Transparent Runtime Bootstrapping**. This means 
 
 ## Quick Install
 
-Get started with Evoker in your current Python environment:
+Get started with Evoker for a Python host application:
 
 ```bash
-pip install .
+pip install ./evoker
+pip install ./hosts/python
 ```
 
-> **Note**: If you are installing from source or developing plugins locally, see the full [Installation Guide](./getting-started/installation.md) to configure build dependencies and development tools.
+> **Note**: This installs both the `evoker_client` host bindings and the `evoker` core worker logic. For a full breakdown of build dependencies, see the [Installation Guide](./getting-started/installation.md).
 
 ---
 

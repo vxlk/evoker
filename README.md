@@ -43,24 +43,58 @@ These native bindings include **Transparent Runtime Bootstrapping**. This means 
 
 Evoker downloads and bundles a standalone Python interpreter during its installation phase. This ensures that plugins can run in fully isolated environments without relying on the end-user's system Python.
 
-To install Evoker:
+To install Evoker for your Python host application:
 
 ```bash
 # Clone the repository
 git clone https://github.com/vxlk/evoker.git
 cd evoker
 
-# Install the Python package
+# Install the core worker package
+pip install ./evoker
+
+# Install the Python host client
 pip install ./hosts/python
 ```
 
-## Usage
+## Quick Start
 
-For a comprehensive, full-system overview of how to build a Evoker application with custom API injection and package the entire architecture into a standalone PyInstaller binary, check out our official example repository:
+Create a simple plugin folder `plugins/hello_plugin/` containing an `__init__.py`:
+
+```python
+# plugins/hello_plugin/__init__.py
+def greet(name: str) -> str:
+    return f"Hello, {name}!"
+```
+
+Initialize the `PluginClient` in your host application:
+
+```python
+# host.py
+from pathlib import Path
+from evoker_client.client import PluginClient
+
+client = PluginClient(Path("plugins"))
+client.start_worker()
+
+try:
+    # Discover available plugins and run an action
+    manifest = client.get_plugins()
+    print("Discovered Plugins:", list(manifest.keys()))
+    
+    result = client.run_action("hello_plugin", "greet", {"name": "World"})
+    print("Result:", result)
+finally:
+    client.stop_worker()
+```
+
+## Examples
+
+For a comprehensive, full-system overview of how to build an Evoker application with custom API injection and package the entire architecture into a standalone PyInstaller binary, check out our official example repository:
 
 👉 **[Evoker Example Host Repository](https://github.com/vxlk/evoker-example)**
 
-You can also see the local [examples/README.md](examples/README.md) directory for a simpler "Hello World" demonstration of how to boot a `PluginClient`.
+You can also see the local [examples/README.md](examples/README.md) directory for a deeper dive.
 
 ## Documentation
 

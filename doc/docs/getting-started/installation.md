@@ -22,9 +22,14 @@ Before installing Evoker, ensure your system satisfies the following prerequisit
 
 ## Basic Installation
 
-To install Evoker into your current Python environment directly from the repository source:
+Evoker is divided into two parts:
+1. **The Core Worker**: The backend runtime that executes isolated plugins.
+2. **The Host Client**: Language-specific bindings that host applications use to spawn and communicate with the worker.
+
+To install the Python host client directly from the repository source:
 
 ```bash
+pip install ./evoker
 pip install ./hosts/python
 ```
 

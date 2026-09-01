@@ -67,7 +67,7 @@ client.start_worker()
 try:
     # Discover available plugins and their introspected actions
     manifest = client.get_plugins()
-    print("Discovered Plugins:", manifest)
+    print("Discovered Plugins:", list(manifest.keys()))
 
     # Invoke the greet function inside the isolated plugin worker
     result = client.run_action("hello_plugin", "greet", {"name": "World"})
@@ -90,7 +90,7 @@ python host.py
 ### Output
 
 ```text
-Discovered Plugins: {'hello_plugin': {'greet': {'name': 'greet', 'signature': {'parameters': {'name': {'type': 'str', 'required': True}}}, 'is_keyword': False, 'strategy_metadata': None}}}
+Discovered Plugins: ['hello_plugin']
 Result: Hello, World!
 ```
 

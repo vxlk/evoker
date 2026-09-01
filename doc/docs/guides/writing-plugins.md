@@ -10,6 +10,13 @@ Plugins in Evoker are self-contained Python packages that execute in dedicated, 
 
 This guide covers everything you need to build, structure, and optimize plugins for the Evoker architecture.
 
+## Plugin Best Practices
+
+Before diving into the code, keep these core principles in mind:
+1. **Stateless Functions**: Your plugin will be invoked as a worker. Avoid relying on global state or long-running background threads unless strictly necessary.
+2. **Simple Return Values**: Because plugins run in separate processes, return values are serialized. Return simple data structures (dicts, lists, strings) rather than complex custom class instances.
+3. **Hide Implementation Details**: Prefix private helper functions with an underscore (e.g., `_my_helper()`). Evoker automatically ignores these when discovering public actions.
+
 ---
 
 ## Plugin Directory Structure
@@ -123,26 +130,28 @@ When `client.get_plugins()` is called on the host, the worker returns a dictiona
 
 ---
 
-## Return Values & Serialization
+## Return Values & Data Transfer
 
-Evoker communicates between the host process and isolated worker processes using an XML-RPC control channel.
+Because your plugin runs in a completely separate process from the host application, any data returned by your functions must be serialized to cross the process boundary. Evoker uses XML-RPC for this communication.
 
-### Supported XML-RPC Types
+### Supported Return Types
 
-Functions can directly return standard primitive and nested data types supported by XML-RPC:
+Functions should return standard Python primitives that can be serialized:
 - Strings (`str`)
 - Integers (`int`)
 - Floats (`float`)
 - Booleans (`bool`)
 - Dictionaries (`dict`, with string keys)
 - Lists / Arrays (`list`)
-- `None` (supported with `allow_none=True`)
+- `None`
 
-### Large Datasets and Custom IPC
+*Note: You cannot return complex objects (like custom class instances, database connections, or open file handles) directly.*
 
-Because XML-RPC serializes payloads as ASCII XML text, transferring very large datasets directly through return values may incur serialization overhead.
+### Handling Large Data
 
-For high-throughput or large data workflows, host applications can implement their own custom IPC mechanisms (such as shared memory, binary files, or local sockets) and inject helper utilities into plugin worker processes via [Custom API Injection](./api-injection.md).
+If your plugin processes massive amounts of data (e.g., multi-gigabyte pandas DataFrames or image arrays), returning them directly might cause performance bottlenecks due to XML serialization overhead.
+
+Instead, the host application can use [Custom API Injection](./api-injection.md) to provide your plugin with utility functions for writing data to shared memory, temporary files, or a local database, bypassing the XML-RPC control channel entirely.
 
 ---
 
