@@ -12,12 +12,25 @@ from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from pathlib import Path
 from typing import Any, List
 from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy, PluginStrategy
+import xmlrpc.client
+
+class EvokerMarshaller(xmlrpc.client.Marshaller):
+    def dump_unicode(self, value, write, escape=xmlrpc.client.escape):
+        for c in value:
+            code = ord(c)
+            if code < 0x20 and code not in (0x09, 0x0a, 0x0d):
+                raise ValueError("Control characters are not allowed in XML-RPC strings")
+        write("<value><string>")
+        write(escape(value).replace('\r', '&#13;'))
+        write("</string></value>\n")
+
+xmlrpc.client.Marshaller.dispatch[str] = EvokerMarshaller.dump_unicode
 
 _AUTH_TOKEN = os.environ.pop("EVOKER_AUTH_TOKEN", None)
 
 class AuthXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
     protocol_version = "HTTP/1.1"
-    
+
     def parse_request(self):
         if super().parse_request():
             if not _AUTH_TOKEN:
@@ -48,8 +61,8 @@ def parse_injected_packages(env_val: str):
 if "EVOKER_INJECTED_PACKAGES" in os.environ:
     parse_injected_packages(os.environ["EVOKER_INJECTED_PACKAGES"])
 
-def parse_strategies(env_val: str):
-    strategies: List[PluginStrategy] = None
+def parse_strategies(env_val: str) -> Optional[List[PluginStrategy]]:
+    strategies: Optional[List[PluginStrategy]] = None
     try:
         strategies_config = json.loads(env_val)
         if isinstance(strategies_config, list):
@@ -131,6 +144,9 @@ class PluginWorkerRPC:
     def invoke(self, plugin_name: str, action_name: str, kwargs: dict) -> Any:
         """Invokes a specific action on a specific plugin."""
         if plugin_name not in self.manager.plugins:
+            self.scan()
+            
+        if plugin_name not in self.manager.plugins:
             raise ValueError(f"Plugin {plugin_name} not found or not loaded.")
 
         plugin = self.manager.plugins[plugin_name]
@@ -167,7 +183,7 @@ class PluginWorkerRPC:
             raise
 
 def start_worker(plugins_dir: str, port: int = 0):
-    server = ThreadingXMLRPCServer(("127.0.0.1", port), requestHandler=AuthXMLRPCRequestHandler, allow_none=True)
+    server = ThreadingXMLRPCServer(("127.0.0.1", port), requestHandler=AuthXMLRPCRequestHandler, allow_none=True, use_builtin_types=True)
     actual_port = server.server_address[1]
 
     # Print exactly this string so the parent process can scrape the port
