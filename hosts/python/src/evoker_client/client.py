@@ -8,29 +8,41 @@ from typing import Optional, List, Dict, Any
 import threading
 import queue
 
-_orig_escape = xmlrpc.client.escape
-def _evoker_escape(s):
-    for c in s:
-        code = ord(c)
-        if code < 0x20 and code not in (0x09, 0x0a, 0x0d):
-            raise ValueError("Control characters are not allowed in XML-RPC strings")
-    return _orig_escape(s).replace('\r', '&#13;')
-xmlrpc.client.escape = _evoker_escape
+class EvokerMarshaller(xmlrpc.client.Marshaller):
+    def dump_unicode(self, value, write, escape=xmlrpc.client.escape):
+        for c in value:
+            code = ord(c)
+            if code < 0x20 and code not in (0x09, 0x0a, 0x0d):
+                raise ValueError("Control characters are not allowed in XML-RPC strings")
+        write("<value><string>")
+        write(escape(value).replace('\r', '&#13;'))
+        write("</string></value>\n")
+
+xmlrpc.client.Marshaller.dispatch[str] = EvokerMarshaller.dump_unicode
 
 class KeepAliveTransport(xmlrpc.client.Transport):
-    def __init__(self, headers=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, headers=None, use_builtin_types=False, *args, **kwargs):
+        super().__init__(use_builtin_types=use_builtin_types, *args, **kwargs)
         self._extra_headers = list(headers) if headers else []
-        self._connection = None
+        self._connection = (None, None)
 
     def make_connection(self, host):
         import http.client
-        if self._connection and host == self._connection[0]:
+        if self._connection[0] == host:
             return self._connection[1]
+
+        if self._connection[1]:
+            self._connection[1].close()
+
         chost, self._extra_headers_host, x509 = self.get_host_info(host)
         conn = http.client.HTTPConnection(chost)
-        self._connection = host, conn
+        self._connection = (host, conn)
         return conn
+
+    def close(self):
+        if self._connection[1]:
+            self._connection[1].close()
+            self._connection = (None, None)
 
 class WorkerDiedError(Exception):
     pass
@@ -134,7 +146,7 @@ class PluginClient:
 
             if pythons_dir.exists():
                 for item in pythons_dir.iterdir():
-                    if item.is_dir() and item.name.startswith("python-"):
+                    if item.is_dir() and item.name.startswith("py"):
                         if os.name == "nt":
                             standalone_exe = item / "python" / "python.exe"
                         else:
@@ -211,7 +223,7 @@ class PluginClient:
 
         self.proxy = xmlrpc.client.ServerProxy(
             f"http://127.0.0.1:{port}",
-            transport=KeepAliveTransport(headers=[("X-Evoker-Auth", self.auth_token)]),
+            transport=KeepAliveTransport(headers=[("X-Evoker-Auth", self.auth_token)], use_builtin_types=True),
             allow_none=True,
             use_builtin_types=True
         )
@@ -247,6 +259,7 @@ class PluginClient:
         """Scans for plugins. Note: PluginClient serialises calls, blocking the calling thread."""
         with self.lock:
             self._check_worker()
+            assert self.proxy is not None
             try:
                 return self.proxy.scan()
             except OSError as e:
@@ -256,10 +269,10 @@ class PluginClient:
     def run_action(self, plugin_name: str, action_name: str, kwargs: dict) -> Any:
         """
         Executes a plugin action.
-        
+
         Note: You must call `get_plugins` (scan) before calling this method,
         otherwise the host will reject the invocation with "Plugin not found or not loaded".
-        
+
         Note: This is a synchronous blocking call over XML-RPC.
         It will serialize calls across the worker, meaning that
         a slow plugin action will block the caller and any other
@@ -267,6 +280,7 @@ class PluginClient:
         """
         with self.lock:
             self._check_worker()
+            assert self.proxy is not None
             try:
                 return self.proxy.invoke(plugin_name, action_name, kwargs)
             except xmlrpc.client.Fault:

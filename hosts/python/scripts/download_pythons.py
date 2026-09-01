@@ -97,7 +97,8 @@ def download_and_extract_python(version: str) -> Path:
     pythons_dir.mkdir(parents=True, exist_ok=True)
     
     triple = get_target_triple()
-    target_dir = pythons_dir / f"python-{version}-{triple}"
+    short_version = "".join(version.split(".")[:2]) # e.g. 3.13 -> 313
+    target_dir = pythons_dir / f"py{short_version}"
     
     if platform.system().lower() == "windows":
         exe_path = target_dir / "python" / "python.exe"
