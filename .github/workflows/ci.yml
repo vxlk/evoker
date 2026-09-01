@@ -30,6 +30,7 @@ jobs:
           python-version: "3.13"
       - run: |
           python -m pip install --upgrade pip
+          pip install ./evoker
           pip install ./hosts/python
           python -c "import evoker; import evoker_client"
 
@@ -75,18 +76,18 @@ jobs:
       - name: Build C++ tests (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          cmake -S hosts/cpp -B hosts/cpp/build -DCMAKE_BUILD_TYPE=Debug
+          cmake -S hosts/cpp -B hosts/cpp/build -DCMAKE_BUILD_TYPE=Debug -DEVOKER_TEST_ASSETS="${{ github.workspace }}/test_assets"
           cmake --build hosts/cpp/build
           cd hosts/cpp/build
-          ctest --output-on-failure -C Debug
+          ctest --output-on-failure -C Debug --timeout 90
 
       - name: Build C++ tests (Windows)
         if: runner.os == 'Windows'
         run: |
-          cmake -S hosts/cpp -B hosts/cpp/build
+          cmake -S hosts/cpp -B hosts/cpp/build -DEVOKER_TEST_ASSETS="${{ github.workspace }}/test_assets"
           cmake --build hosts/cpp/build --config Debug
           cd hosts/cpp/build
-          ctest --output-on-failure -C Debug
+          ctest --output-on-failure -C Debug --timeout 90
 
       - name: Build C tests (Linux/macOS)
         if: runner.os != 'Windows'
@@ -94,7 +95,7 @@ jobs:
           cmake -S hosts/c -B hosts/c/build -DCMAKE_BUILD_TYPE=Debug
           cmake --build hosts/c/build
           cd hosts/c/build
-          ctest --output-on-failure -C Debug
+          ctest --output-on-failure -C Debug --timeout 90
 
       - name: Build C tests (Windows)
         if: runner.os == 'Windows'
@@ -102,7 +103,21 @@ jobs:
           cmake -S hosts/c -B hosts/c/build
           cmake --build hosts/c/build --config Debug
           cd hosts/c/build
-          ctest --output-on-failure -C Debug
+          ctest --output-on-failure -C Debug --timeout 90
+
+  test_slow:
+    name: Slow Tests (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e "./evoker"
+          pip install -e "./hosts/python[dev]"
+      - run: pytest hosts/python/tests -m slow
 
   release:
     name: Build Release Binaries

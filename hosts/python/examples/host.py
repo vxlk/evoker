@@ -60,10 +60,11 @@ def main():
         plugin_name = "hello_world_plugin"
         
         if plugin_name not in manifest:
-            print(f"[!] Could not find {plugin_name} in manifest!")
-            client.stop_worker()
-            return
-            
+            print(f"[!] Could not find hello_world_plugin in manifest!")
+            print("Available plugins:")
+            for name in manifest.keys():
+                print(f"  - {name}")
+            sys.exit(1)
         # Demo 1: Exact Match (on_start)
         print_separator("Demo 1: Exact Match Strategy (on_start)")
         client.run_action(plugin_name, "on_start", {"app_context": {}})
