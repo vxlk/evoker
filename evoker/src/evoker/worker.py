@@ -10,7 +10,7 @@ import json
 import socketserver
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Optional
 from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy, PluginStrategy
 import xmlrpc.client
 
