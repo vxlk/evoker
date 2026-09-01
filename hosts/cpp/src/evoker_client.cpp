@@ -91,7 +91,8 @@ PluginClient::~PluginClient() {
 
 static bool ensure_evoker_installed(const std::string& exe_path) {
     reproc::process test_import;
-    std::vector<std::string> test_args = {exe_path, "-c", "import evoker.worker"};
+    std::string check_script = "import importlib.metadata; import sys; sys.exit(0 if importlib.metadata.version('evoker') == '0.1.1' else 1)";
+    std::vector<std::string> test_args = {exe_path, "-c", check_script};
     if (test_import.start(test_args) == std::error_code{} && test_import.wait(reproc::infinite).first == 0) {
         return true;
     }
@@ -242,6 +243,11 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
             std::cerr << "Failed to bootstrap python" << std::endl;
             return false;
         }
+    } else {
+        if (!ensure_evoker_installed(actual_python)) {
+            std::cerr << "Failed to install evoker into provided python" << std::endl;
+            return false;
+        }
     }
 
     std::string actual_worker_script = worker_script;
@@ -284,9 +290,8 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
     }
     env["EVOKER_AUTH_TOKEN"] = m_token;
     
-    reproc::env reproc_env(env);
     if (!env.empty()) {
-        options.env.extra = reproc_env;
+        options.env.extra = reproc::env(env);
     }
 
     m_process = std::make_unique<reproc::process>();

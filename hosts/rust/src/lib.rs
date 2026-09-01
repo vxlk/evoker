@@ -47,9 +47,10 @@ pub struct ExactMatchStrategy {
 }
 
 fn ensure_evoker_installed(exe_path: &PathBuf) -> Result<(), String> {
-    // Verify import succeeds
+    // Verify import succeeds and version matches
+    let check_script = "import importlib.metadata; import sys; sys.exit(0 if importlib.metadata.version('evoker') == '0.1.1' else 1)";
     let import_status = Command::new(exe_path)
-        .args(&["-c", "import evoker.worker"])
+        .args(&["-c", check_script])
         .status()
         .map_err(|e| e.to_string())?;
         
@@ -314,8 +315,7 @@ impl PluginClient {
         // Start a thread to read the port line
         thread::spawn(move || {
             let mut found_port = None;
-            for _ in 0..50 {
-                // read up to 50 lines looking for port
+            loop {
                 line.clear();
                 match reader.read_line(&mut line) {
                     Ok(0) => break,
@@ -326,6 +326,8 @@ impl PluginClient {
                                 found_port = Some(p);
                                 break;
                             }
+                        } else {
+                            print!("{}", line);
                         }
                     }
                     Err(_) => break,
@@ -334,7 +336,7 @@ impl PluginClient {
             let _ = tx.send((found_port, reader));
         });
 
-        match rx.recv_timeout(std::time::Duration::from_secs(5)) {
+        match rx.recv_timeout(std::time::Duration::from_secs(120)) {
             Ok((Some(port), mut reader)) => {
                 let stderr = child.stderr.take().expect("Failed to open stderr");
                 thread::spawn(move || {
