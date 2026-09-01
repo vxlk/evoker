@@ -50,3 +50,11 @@ hosts/python/.hypothesis/
 hosts/c/cpp/build/
 hosts/c/.cache/
 hosts/cpp/.cache/
+.mypy_cache/
+pip/
+.ruff_cache/
+stdout.txt
+test_wheels/
+full_output.txt
+.hypothesis/
+test_output.log
