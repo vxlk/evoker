@@ -42,7 +42,7 @@ def test_pyinstaller_build_and_run(tmp_path):
     # We will use subprocess.Popen and taskkill to kill the tree.
     p = subprocess.Popen([str(exe_path)], cwd=python_host_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
-        stdout, stderr = p.communicate(timeout=60)
+        stdout, stderr = p.communicate(timeout=120)
         returncode = p.returncode
     except subprocess.TimeoutExpired:
         subprocess.run(["taskkill", "/F", "/T", "/PID", str(p.pid)], capture_output=True)

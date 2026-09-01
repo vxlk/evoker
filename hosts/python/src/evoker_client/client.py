@@ -171,7 +171,7 @@ class PluginClient:
         t = threading.Thread(target=read_port, daemon=True)
         t.start()
 
-        while time.time() - start_time < 5:
+        while time.time() - start_time < 120:
             try:
                 line = q.get(timeout=0.5)
                 output_lines.append(line)
