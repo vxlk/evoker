@@ -2,12 +2,24 @@ name: CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install ruff mypy
+      - run: ruff check evoker/src hosts/python/src
+      - run: mypy evoker/src hosts/python/src --ignore-missing-imports
+
   test:
     name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -29,13 +41,19 @@ jobs:
       - name: Install Python test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest hypothesis
-          pip install -e "./hosts/python[dev]"
+          pip install pytest hypothesis pytest-cov
+          pip install -e "./evoker[dev]"
+          pip install -e "./hosts/python"
 
       - name: Run Python tests
         run: |
-          cd hosts/python
-          pytest tests
+          pytest hosts/python/tests --cov=evoker --cov=evoker_client --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
 
       - name: Run Rust tests
         run: |
@@ -47,33 +65,50 @@ jobs:
         run: |
           cmake -S hosts/cpp -B hosts/cpp/build -DCMAKE_BUILD_TYPE=Debug
           cmake --build hosts/cpp/build
-          ./hosts/cpp/build/integration_test
-          ./hosts/cpp/build/cpp_unit_tests
-          ./hosts/cpp/build/cpp_fuzz_test
-          ./hosts/cpp/build/cpp_error_test
+          cd hosts/cpp/build
+          ctest --output-on-failure -C Debug
 
       - name: Build C++ tests (Windows)
         if: runner.os == 'Windows'
         run: |
           cmake -S hosts/cpp -B hosts/cpp/build
           cmake --build hosts/cpp/build --config Debug
-          .\hosts\cpp\build\Debug\integration_test.exe
-          .\hosts\cpp\build\Debug\cpp_unit_tests.exe
-          .\hosts\cpp\build\Debug\cpp_fuzz_test.exe
-          .\hosts\cpp\build\Debug\cpp_error_test.exe
+          cd hosts/cpp/build
+          ctest --output-on-failure -C Debug
 
       - name: Build C tests (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
           cmake -S hosts/c -B hosts/c/build -DCMAKE_BUILD_TYPE=Debug
           cmake --build hosts/c/build
-          ./hosts/c/build/c_integration_test
-          ./hosts/c/build/c_error_test
+          cd hosts/c/build
+          ctest --output-on-failure -C Debug
 
       - name: Build C tests (Windows)
         if: runner.os == 'Windows'
         run: |
           cmake -S hosts/c -B hosts/c/build
           cmake --build hosts/c/build --config Debug
-          .\hosts\c\build\Debug\c_integration_test.exe
-          .\hosts\c\build\Debug\c_error_test.exe
+          cd hosts/c/build
+          ctest --output-on-failure -C Debug
+
+  release:
+    name: Build Release Binaries
+    runs-on: windows-latest
+    needs: [lint, test]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e "./evoker[dev]"
+          pip install -e "./hosts/python"
+          python hosts/python/dev.py build-release
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: evoker-windows-release
+          path: hosts/python/dist/host.exe

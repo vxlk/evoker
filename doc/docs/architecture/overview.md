@@ -126,7 +126,7 @@ graph TD
 
     UseVenv --> LaunchSubprocess[Spawn Subprocess with Resolved Python]
     UseBundled --> LaunchSubprocess
-    UseVenv --> LaunchSubprocess
+    Tier3 --> LaunchSubprocess
 ```
 
 ### Resolution Order
@@ -146,7 +146,7 @@ graph TD
 
 When the host application is packaged with PyInstaller (`getattr(sys, "frozen", False) == True`):
 - PyInstaller modifies environment variables such as `PYTHONPATH` and `PYTHONHOME`.
-- `PluginClient.start_worker()` sanitizes the child environment by restoring `ORIG_PYTHONPATH` / `ORIG_PYTHONHOME` or removing them to prevent standalone interpreters from loading PyInstaller's embedded libraries.
+- `PluginClient.start_worker()` sanitizes the child environment by unsetting these variables to prevent standalone interpreters from loading PyInstaller's embedded libraries. (It also restores `PATH` using `ORIG_PATH`).
 - If using the frozen executable itself as the worker interpreter, Evoker passes `--evoker-worker` so the executable's entry point intercepts the flag and invokes `worker.py` rather than re-launching the main GUI/CLI host.
 
 ---

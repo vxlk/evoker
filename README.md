@@ -5,11 +5,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/vxlk/evoker/actions"><img src="https://img.shields.io/github/actions/workflow/status/vxlk/evoker/ci.yml?branch=main" alt="Build Status"></a>
-  <a href="https://pypi.org/project/evoker-plugin-host/"><img src="https://img.shields.io/pypi/v/evoker-plugin-host" alt="PyPI Version"></a>
+  <a href="https://github.com/vxlk/evoker/actions"><img src="https://img.shields.io/github/actions/workflow/status/vxlk/evoker/ci.yml?branch=master" alt="Build Status"></a>
   <a href="https://vxlk.github.io/Evoker/"><img src="https://img.shields.io/badge/docs-latest-blue.svg" alt="Documentation"></a>
-  <a href="https://github.com/vxlk/evoker/blob/main/LICENSE"><img src="https://img.shields.io/github/license/vxlk/evoker" alt="License"></a>
-  <a href="https://codecov.io/gh/vxlk/evoker"><img src="https://img.shields.io/codecov/c/github/vxlk/evoker" alt="Codecov"></a>
+  <a href="https://github.com/vxlk/evoker/blob/master/LICENSE"><img src="https://img.shields.io/github/license/vxlk/evoker" alt="License"></a>
 </p>
 
 <p align="center">
