@@ -1,21 +1,19 @@
 import os
-import subprocess
-import sys
 from setuptools import setup, find_packages
-from setuptools.command.build_py import build_py
 
-# Set the desired standalone python version to download here
-PYTHON_VERSION = "3.13"
+version_file = os.path.join(os.path.dirname(__file__), '../../VERSION')
+with open(version_file, 'r') as f:
+    version = f.read().strip()
 
 setup(
     name='evoker_client',
-    version='0.1.0',
+    version=version,
     description='Evoker Python Client',
     python_requires='>=3.10',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     install_requires=[
-        f"evoker @ file://localhost/{os.path.abspath(os.path.join(os.path.dirname(__file__), '../../evoker')).replace(chr(92), '/')}"
+        f"evoker=={version}"
     ],
     entry_points={
         'pyinstaller40': [

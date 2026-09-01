@@ -4,7 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "evoker"
-version = "0.1.0"
+dynamic = ["version"]
+
+[tool.setuptools.dynamic]
+version = {file = "../VERSION"}
 description = "Evoker worker runtime"
 requires-python = ">=3.10"
 dependencies = []
