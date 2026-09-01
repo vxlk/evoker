@@ -80,8 +80,8 @@ class PluginClient:
         worker_script = Path(spec.origin)
         evoker_pkg_dir = worker_script.parent
 
-        # Set PYTHONPATH so the standalone python can import it
-        env["PYTHONPATH"] = str(evoker_pkg_dir.parent)
+        # Set EVOKER_PKG_DIR so the standalone python can import it (avoids PyInstaller DLL collisions)
+        env["EVOKER_PKG_DIR"] = str(evoker_pkg_dir.parent)
 
         # Also, pythons directory might be in evoker_client
         client_dir = Path(__file__).parent

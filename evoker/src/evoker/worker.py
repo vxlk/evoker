@@ -1,4 +1,7 @@
 import sys
+import os
+if "EVOKER_PKG_DIR" in os.environ:
+    sys.path.append(os.environ["EVOKER_PKG_DIR"])
 if getattr(sys, "frozen", False):
     sys.path.insert(0, sys._MEIPASS)
 import logging
