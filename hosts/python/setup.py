@@ -33,9 +33,5 @@ setup(
             'zstandard>=0.21.0',
         ]
     },
-    include_package_data=True,
-    package_data={
-        # Ensure the downloaded pythons are bundled with the package
-        '': ['pythons/**/*'],
-    }
+    include_package_data=True
 )

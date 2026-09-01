@@ -34,9 +34,7 @@ def get_target_triple() -> str:
 
 def get_pythons_dir() -> Path:
     """Return the common location for python environments inside the package."""
-    # This script is at scripts/download_pythons.py
-    # We want to install pythons into src/evoker/pythons so it gets bundled by setup.py
-    return Path(__file__).parent.parent / "src" / "evoker" / "pythons"
+    return Path(__file__).resolve().parent.parent.parent.parent / "evoker" / "src" / "evoker" / "pythons"
 
 def extract_zst(archive_path: Path, dest_dir: Path):
     if zstd is None:

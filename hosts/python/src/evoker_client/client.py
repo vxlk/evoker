@@ -102,7 +102,12 @@ class PluginClient:
         
         # 2. Check the common pythons directory
         if python_exe == Path(sys.executable):
-            pythons_dir = client_dir / "pythons"
+            try:
+                import evoker
+                pythons_dir = Path(evoker.__file__).parent / "pythons"
+            except ImportError:
+                pythons_dir = client_dir / "pythons"  # Fallback
+
             if pythons_dir.exists():
                 for item in pythons_dir.iterdir():
                     if item.is_dir() and item.name.startswith("python-"):
@@ -123,7 +128,13 @@ class PluginClient:
             cmd = [str(python_exe), "--evoker-worker", str(worker_script), str(self.plugins_dir)]
         else:
             # When using an external Python interpreter (.venv), run the script directly by path
-            cmd = [str(python_exe), "-u", str(worker_script), str(self.plugins_dir)]
+            python_exe_str = str(python_exe)
+            if os.name == "nt" and python_exe != Path(sys.executable):
+                # Prefix to bypass MAX_PATH limit on Windows for deeply nested site-packages
+                python_exe_str = str(python_exe.resolve())
+                if not python_exe_str.startswith("\\\\?\\"):
+                    python_exe_str = "\\\\?\\" + python_exe_str
+            cmd = [python_exe_str, "-u", str(worker_script), str(self.plugins_dir)]
 
         self.worker_process = subprocess.Popen(
             cmd,
@@ -157,6 +168,9 @@ class PluginClient:
                     break
                 
         if port is None:
+            # Drain queue to capture full output before stopping worker
+            while not q.empty():
+                output_lines.append(q.get())
             self.stop_worker()
             raise RuntimeError(f"Failed to start worker or get port.\npython_exe: {python_exe} (exists: {Path(python_exe).exists()})\nworker_script: {worker_script} (exists: {Path(worker_script).exists()})\nWorker output:\n{''.join(output_lines)}")
             
