@@ -4,6 +4,7 @@
 #include <chrono>
 #include <tinyxml2.h>
 #include <sstream>
+#include <iomanip>
 #include <httplib.h>
 #include <reproc++/drain.hpp>
 #include <filesystem>
@@ -45,7 +46,9 @@ static std::string json_to_xmlrpc(const nlohmann::json& j) {
         if (std::isnan(val)) {
             return "<value><double>NaN</double></value>";
         }
-        return "<value><double>" + std::to_string(val) + "</double></value>";
+        std::ostringstream oss;
+        oss << std::setprecision(17) << val;
+        return "<value><double>" + oss.str() + "</double></value>";
     } else if (j.is_boolean()) {
         return "<value><boolean>" + std::string(j.get<bool>() ? "1" : "0") + "</boolean></value>";
     } else if (j.is_array()) {
