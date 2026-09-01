@@ -25,23 +25,19 @@ Before installing Evoker, ensure your system satisfies the following prerequisit
 To install Evoker into your current Python environment directly from the repository source:
 
 ```bash
-pip install . --no-cache-dir
+pip install ./hosts/python
 ```
-
-:::warning Pip Caching and Standalone Pythons
-During the build phase (`setup.py`), Evoker automatically downloads a standalone Python distribution via [`python-build-standalone`](https://github.com/astral-sh/python-build-standalone) and packages it into the distribution.
-
-`pip` aggressively caches built wheels. If you modify build configurations or standalone Python versions in `setup.py`, running `pip install .` without flags may reuse a stale cached wheel rather than triggering a clean standalone download. **Always use `--no-cache-dir` when installing from local source.**
-:::
 
 ---
 
 ## Development Installation
 
-If you are developing Evoker itself or writing custom extensions, install the project in **editable mode** along with all development extras:
+### Editable (Development) Installation
+
+For developing Evoker itself, install via editable mode along with `[dev]` dependencies:
 
 ```bash
-pip install -e .[dev]
+pip install -e ./hosts/python[dev]
 ```
 
 ### Included Development Dependencies

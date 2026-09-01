@@ -27,6 +27,7 @@ def cmd_install():
         venv.create(".venv", with_pip=True)
     
     py_exec = get_venv_python()
+    run_command([str(py_exec), "-m", "pip", "install", "-e", "../../evoker"])
     run_command([str(py_exec), "-m", "pip", "install", "-e", ".[dev]"])
 
 def cmd_build():

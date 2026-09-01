@@ -46,17 +46,13 @@ Evoker downloads and bundles a standalone Python interpreter during its installa
 To install Evoker:
 
 ```bash
-pip install .
-```
+# Clone the repository
+git clone https://github.com/vxlk/evoker.git
+cd evoker
 
-> [!WARNING]
-> **Pip Caching Behavior**
-> `pip` aggressively caches built wheels. If you change the `PYTHON_VERSION` in `setup.py`, running `pip install .` again might simply install the cached wheel without re-running the python downloader script. 
-> 
-> To force a clean build and ensure the latest python version is downloaded, use:
-> ```bash
-> pip install . --no-cache-dir
-> ```
+# Install the Python package
+pip install ./hosts/python
+```
 
 ## Usage
 

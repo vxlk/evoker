@@ -20,6 +20,19 @@ jobs:
       - run: ruff check evoker/src hosts/python/src
       - run: mypy evoker/src hosts/python/src --ignore-missing-imports
 
+  install_test:
+    name: Test Install Sequence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install ./hosts/python
+          python -c "import evoker; import evoker_client"
+
   test:
     name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -41,9 +54,8 @@ jobs:
       - name: Install Python test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest hypothesis pytest-cov
-          pip install -e "./evoker[dev]"
-          pip install -e "./hosts/python"
+          pip install -e "./evoker"
+          pip install -e "./hosts/python[dev]"
 
       - name: Run Python tests
         run: |
@@ -104,8 +116,8 @@ jobs:
           python-version: "3.13"
       - run: |
           python -m pip install --upgrade pip
-          pip install -e "./evoker[dev]"
-          pip install -e "./hosts/python"
+          pip install -e "./evoker"
+          pip install -e "./hosts/python[dev]"
           python hosts/python/dev.py build-release
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v4

@@ -15,7 +15,7 @@ setup(
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     install_requires=[
-        'evoker'
+        f"evoker @ file://localhost/{os.path.abspath(os.path.join(os.path.dirname(__file__), '../../evoker')).replace(chr(92), '/')}"
     ],
     entry_points={
         'pyinstaller40': [
