@@ -57,6 +57,9 @@ target_link_libraries(basic_host PRIVATE evoker_host)
 # We will use simple assert for standard tests to reduce dependencies here
 add_executable(integration_test tests/integration_test.cpp)
 target_link_libraries(integration_test PRIVATE evoker_host)
+if (DEFINED EVOKER_TEST_ASSETS)
+    target_compile_definitions(integration_test PRIVATE EVOKER_TEST_ASSETS="${EVOKER_TEST_ASSETS}")
+endif()
 
 add_executable(cpp_unit_tests tests/unit_tests.cpp src/evoker_client.cpp)
 target_link_libraries(cpp_unit_tests PRIVATE tinyxml2 reproc++ reproc httplib::httplib)

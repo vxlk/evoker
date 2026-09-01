@@ -16,6 +16,9 @@ target_link_libraries(evoker_client_c PRIVATE evoker_host)
 # Tests
 add_executable(c_integration_test tests/integration_test.c)
 target_link_libraries(c_integration_test PRIVATE evoker_client_c)
+if (DEFINED EVOKER_TEST_ASSETS)
+    target_compile_definitions(c_integration_test PRIVATE EVOKER_TEST_ASSETS="${EVOKER_TEST_ASSETS}")
+endif()
 
 add_executable(c_error_test tests/c_error_test.c)
 target_link_libraries(c_error_test PRIVATE evoker_client_c)

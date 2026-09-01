@@ -1,68 +1,44 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#define ALWAYS_ASSERT(cond) do { if (!(cond)) { fprintf(stderr, "Assertion failed: %s\n", #cond); abort(); } } while(0)
 #include "evoker_client_c.h"
 
-int main() {
-    // Relative paths from build directory (hosts/c/build)
-    const char* plugins_dir = "../../test_assets/plugins";
-    const char* src_dir = "../../python/src";
-    const char* worker_script = "evoker.worker";
-
-    // Try alternate path if it doesn't exist (if run from root or hosts/c)
-    FILE* f = fopen("../../test_assets/plugins/test_plugin/manifest.json", "r");
-    if (!f) {
-        f = fopen("hosts/test_assets/plugins/test_plugin/manifest.json", "r");
-        if (f) {
-            plugins_dir = "hosts/test_assets/plugins";
-            src_dir = "hosts/python/src";
-            fclose(f);
-        } else {
-            f = fopen("../../../test_assets/plugins/test_plugin/manifest.json", "r");
-            if (f) {
-                plugins_dir = "../../../test_assets/plugins";
-                src_dir = "../../../python/src";
-                fclose(f);
-            } else {
-                plugins_dir = "../test_assets/plugins";
-                src_dir = "../python/src";
-            }
-        }
-    } else {
-        fclose(f);
-    }
-
-#ifdef _WIN32
-    _putenv_s("PYTHONPATH", src_dir);
-#else
-    setenv("PYTHONPATH", src_dir, 1);
+#ifndef EVOKER_TEST_ASSETS
+#define EVOKER_TEST_ASSETS "../../test_assets"
 #endif
+
+#define ALWAYS_ASSERT(cond) do { \
+    if (!(cond)) { \
+        fprintf(stderr, "Assertion failed: %s\n", #cond); \
+        if (client) evoker_client_destroy(client); \
+        abort(); \
+    } \
+} while(0)
+
+int main() {
+    char plugins_dir[1024];
+    snprintf(plugins_dir, sizeof(plugins_dir), "%s/plugins", EVOKER_TEST_ASSETS);
+    const char* worker_script = "evoker.worker";
 
     evoker_client_t* client = evoker_client_create(plugins_dir, NULL, NULL);
     ALWAYS_ASSERT(client != NULL);
 
-    printf("Starting worker...\n");
+    printf("Starting C integration test...\n");
     int started = evoker_client_start_worker(client, "python", worker_script);
-    ALWAYS_ASSERT(started == 1);
+    ALWAYS_ASSERT(started);
 
-    printf("Scanning...\n");
-    char* manifest = evoker_client_scan(client);
-    ALWAYS_ASSERT(manifest != NULL);
-    ALWAYS_ASSERT(strstr(manifest, "test_plugin") != NULL);
-    evoker_client_free_string(manifest);
+    char* manifest_str = evoker_client_scan(client);
+    ALWAYS_ASSERT(manifest_str != NULL);
+    evoker_client_free_string(manifest_str);
 
-    printf("Invoking...\n");
-    char* result = evoker_client_invoke(client, "test_plugin", "hello_world", "{\"name\": \"C Developer\"}");
-    ALWAYS_ASSERT(result != NULL);
-    ALWAYS_ASSERT(strstr(result, "Hello, C Developer!") != NULL);
-    evoker_client_free_string(result);
+    const char* kwargs_json = "{\"name\": \"C Developer\"}";
+    char* result_str = evoker_client_invoke(client, "test_plugin", "hello_world", kwargs_json);
+    ALWAYS_ASSERT(result_str != NULL);
+    
+    // Using string matching for simple JSON response
+    ALWAYS_ASSERT(strstr(result_str, "Hello, C Developer!") != NULL);
+    evoker_client_free_string(result_str);
 
     evoker_client_destroy(client);
-    printf("C Integration test passed!\n");
-
+    printf("Integration test passed successfully!\n");
     return 0;
 }
-
