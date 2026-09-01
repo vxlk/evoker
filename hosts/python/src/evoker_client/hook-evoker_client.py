@@ -2,9 +2,9 @@ import os
 from PyInstaller.utils.hooks import collect_data_files, get_package_paths
 
 # This hook tells PyInstaller to automatically bundle all data files within `evoker`
-# Whenever a Pyinstaller build is triggered on an app that imports `evoker`, 
+# Whenever a Pyinstaller build is triggered on an app that imports `evoker`,
 # this hook runs and ensures the bundled standalone python environments (and installers)
-# are perfectly packaged into the `_internal` directory without the user needing to 
+# are perfectly packaged into the `_internal` directory without the user needing to
 # configure `datas` in their .spec file!
 datas = collect_data_files('evoker')
 
@@ -17,8 +17,8 @@ if os.path.exists(docs_html_path):
     # directly to `dist/host/plugins/docs` rather than burying them in `_internal`!
     datas.append((docs_html_path, 'plugins/docs'))
 
-# The worker script is spawned dynamically via subprocess, so Pyinstaller's analysis 
-# doesn't see it statically. We must explicitly include it in the hidden imports so 
+# The worker script is spawned dynamically via subprocess, so Pyinstaller's analysis
+# doesn't see it statically. We must explicitly include it in the hidden imports so
 # it gets packaged into the PYZ archive and can be executed via runpy in the frozen bundle.
 hiddenimports = ['evoker.worker']
 

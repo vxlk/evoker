@@ -72,16 +72,22 @@ class PluginClient:
                 if var != "PATH":
                     del env[var]
 
-        import importlib.util
-        spec = importlib.util.find_spec("evoker.worker")
-        if not spec or not spec.origin:
-            raise RuntimeError("Cannot find evoker.worker. Is evoker installed?")
-
-        worker_script = Path(spec.origin)
-        evoker_pkg_dir = worker_script.parent
+        # Determine worker script path
+        is_frozen = getattr(sys, "frozen", False)
+        if is_frozen:
+            # We bundled the evoker package physical files into evoker_pkg to isolate DLLs
+            evoker_pkg_dir = Path(sys._MEIPASS) / "evoker_pkg"
+            worker_script = evoker_pkg_dir / "evoker" / "worker.py"
+        else:
+            import importlib.util
+            spec = importlib.util.find_spec("evoker.worker")
+            if not spec or not spec.origin:
+                raise RuntimeError("Cannot find evoker.worker. Is evoker installed?")
+            worker_script = Path(spec.origin)
+            evoker_pkg_dir = worker_script.parent.parent
 
         # Set EVOKER_PKG_DIR so the standalone python can import it (avoids PyInstaller DLL collisions)
-        env["EVOKER_PKG_DIR"] = str(evoker_pkg_dir.parent)
+        env["EVOKER_PKG_DIR"] = str(evoker_pkg_dir)
 
         # Also, pythons directory might be in evoker_client
         client_dir = Path(__file__).parent
@@ -115,13 +121,16 @@ class PluginClient:
                         python_exe = venv_exe
                         break
 
-        # 2. Check the common pythons directory
-        if python_exe == Path(sys.executable):
-            try:
-                import evoker
-                pythons_dir = Path(evoker.__file__).parent / "pythons"
-            except ImportError:
-                pythons_dir = client_dir / "pythons"  # Fallback
+        # 2. Check the bundled pythons directory
+        if not (python_exe and python_exe != Path(sys.executable)):
+            if is_frozen:
+                pythons_dir = evoker_pkg_dir / "evoker" / "pythons"
+            else:
+                try:
+                    import evoker
+                    pythons_dir = Path(evoker.__file__).parent / "pythons"
+                except ImportError:
+                    pythons_dir = client_dir / "pythons"  # Fallback
 
             if pythons_dir.exists():
                 for item in pythons_dir.iterdir():

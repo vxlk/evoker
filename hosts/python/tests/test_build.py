@@ -54,6 +54,8 @@ def test_pyinstaller_build_and_run(tmp_path):
     
     # Verify the host output contains the success messages
     output = stdout + "\n" + stderr
+    print(f"--- HOST EXECUTION OUTPUT ---\n{output}\n-----------------------------")
+    
     assert "Building them now..." in output, "Expected to see auto-wheel building log."
     assert "Hello World from Plugin via Arrow!" in output, "Missing Arrow IPC (Plugin -> Host) success."
     assert "Hello World from Host via Arrow!" in output, "Missing Arrow IPC (Host -> Plugin) success."

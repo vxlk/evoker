@@ -61,6 +61,7 @@ def main():
         
         if plugin_name not in manifest:
             print(f"[!] Could not find {plugin_name} in manifest!")
+            client.stop_worker()
             return
             
         # Demo 1: Exact Match (on_start)
