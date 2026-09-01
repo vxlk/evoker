@@ -13,6 +13,8 @@ from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy, Pl
 _AUTH_TOKEN = os.environ.pop("EVOKER_AUTH_TOKEN", None)
 
 class AuthXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
+    protocol_version = "HTTP/1.1"
+    
     def parse_request(self):
         if super().parse_request():
             if not _AUTH_TOKEN:

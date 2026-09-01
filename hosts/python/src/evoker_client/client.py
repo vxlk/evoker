@@ -17,6 +17,21 @@ def _evoker_escape(s):
     return _orig_escape(s).replace('\r', '&#13;')
 xmlrpc.client.escape = _evoker_escape
 
+class KeepAliveTransport(xmlrpc.client.Transport):
+    def __init__(self, headers=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._extra_headers = list(headers) if headers else []
+        self._connection = None
+
+    def make_connection(self, host):
+        import http.client
+        if self._connection and host == self._connection[0]:
+            return self._connection[1]
+        chost, self._extra_headers_host, x509 = self.get_host_info(host)
+        conn = http.client.HTTPConnection(chost)
+        self._connection = host, conn
+        return conn
+
 class WorkerDiedError(Exception):
     pass
 
@@ -187,7 +202,7 @@ class PluginClient:
 
         self.proxy = xmlrpc.client.ServerProxy(
             f"http://127.0.0.1:{port}",
-            headers=(("X-Evoker-Auth", self.auth_token),),
+            transport=KeepAliveTransport(headers=[("X-Evoker-Auth", self.auth_token)]),
             allow_none=True,
             use_builtin_types=True
         )
