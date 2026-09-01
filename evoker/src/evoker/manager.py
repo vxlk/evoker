@@ -56,18 +56,18 @@ class PluginManager:
             import types
             sys.modules["evoker_plugins"] = types.ModuleType("evoker_plugins")
         if strategies is None:
-            self.strategies = [ExactMatchStrategy("on_start", ["app_context"])]
+            self.strategies: List[PluginStrategy] = [ExactMatchStrategy("on_start", ["app_context"])]
         else:
-            self.strategies = strategies
+            self.strategies: List[PluginStrategy] = strategies
 
     def load_plugin(self, plugin_dir: Path) -> Optional[Dict[str, PluginAction]]:
         manifest_path = plugin_dir / "manifest.json"
         init_path = plugin_dir / "__init__.py"
-        
+
         if not manifest_path.exists():
             logger.warning(f"Skipping {plugin_dir}: Missing manifest.json")
             return None
-            
+
         try:
             with open(manifest_path, "r", encoding="utf-8") as f:
                 manifest = json.load(f)
@@ -101,12 +101,12 @@ class PluginManager:
 
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
-        
+
         path_insertions = []
         # Inject to path for local imports within the plugin
         sys.path.insert(0, str(plugin_dir))
         path_insertions.append(str(plugin_dir))
-        
+
         # Inject the newly created .venv site-packages into sys.path
         # so the plugin can import the dependencies just installed by installer.py.
         venv_dir = plugin_dir / ".venv"
@@ -122,7 +122,7 @@ class PluginManager:
                         if d.is_dir() and d.name.startswith("python"):
                             site_packages = d / "site-packages"
                             break
-            
+
             if site_packages and site_packages.exists():
                 if str(site_packages) not in sys.path:
                     # Detect dependency collisions with previously loaded plugins
@@ -133,17 +133,19 @@ class PluginManager:
                         if pkg_name in sys.modules:
                             mod = sys.modules[pkg_name]
                             if hasattr(mod, '__file__') and mod.__file__ and str(site_packages) not in mod.__file__:
+                                loaded_version = None
                                 try:
                                     loaded_version = importlib.metadata.version(pkg_name)
                                 except Exception:
                                     pass
-                                logger.error(f"Plugin {plugin_dir.name} dependency collision: '{pkg_name}' already loaded from {mod.__file__}")
+                                version_str = f" (version {loaded_version})" if loaded_version else ""
+                                logger.error(f"Plugin {plugin_dir.name} dependency collision: '{pkg_name}'{version_str} already loaded from {mod.__file__}")
                                 sys.modules.pop(module_name, None)
                                 return None
-                    
+
                     sys.path.insert(1, str(site_packages))
                     path_insertions.append(str(site_packages))
-                    
+
         try:
             spec.loader.exec_module(module)
         except Exception as e:
@@ -177,17 +179,17 @@ class PluginManager:
                 continue
 
             sig = inspect.signature(func)
-            
+
             has_positional_only = False
             for param in sig.parameters.values():
                 if param.kind == inspect.Parameter.POSITIONAL_ONLY:
                     has_positional_only = True
                     break
-            
+
             if has_positional_only:
                 logger.warning(f"Action '{name}' in plugin '{module.__name__}' was skipped because positional-only parameters are not supported.")
                 continue
-            
+
             # Serialize signature info
             sig_info = {"parameters": {}}
             for param_name, param in sig.parameters.items():
@@ -198,7 +200,7 @@ class PluginManager:
                     type_name = getattr(param.annotation, "__name__", str(param.annotation))
                 else:
                     logger.warning(f"Argument '{param_name}' in action '{name}' lacks type hint. Defaulting to unannotated.")
-                
+
                 sig_info["parameters"][param_name] = {
                     "type": type_name,
                     "required": param.default is inspect.Parameter.empty
@@ -207,7 +209,7 @@ class PluginManager:
             is_keyword = False
             strategy_metadata = None
             ignore_action = False
-            
+
             for strategy in self.strategies:
                 try:
                     match_result = strategy.match(name, sig_info)
@@ -218,10 +220,10 @@ class PluginManager:
                 except ValueError:
                     ignore_action = True
                     break
-                    
+
             if ignore_action:
                 continue
-                    
+
             actions[name] = PluginAction(name, func, sig_info, is_keyword, strategy_metadata)
-            
+
         return actions

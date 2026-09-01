@@ -7,6 +7,8 @@ import json
 import socketserver
 from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from pathlib import Path
+from typing import Any, List
+from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy
 
 _AUTH_TOKEN = os.environ.pop("EVOKER_AUTH_TOKEN", None)
 
@@ -26,8 +28,6 @@ class AuthXMLRPCRequestHandler(SimpleXMLRPCRequestHandler):
 class ThreadingXMLRPCServer(socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     pass
 
-from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy
-
 logger = logging.getLogger(__name__)
 
 def parse_injected_packages(env_val: str):
@@ -44,7 +44,7 @@ if "EVOKER_INJECTED_PACKAGES" in os.environ:
     parse_injected_packages(os.environ["EVOKER_INJECTED_PACKAGES"])
 
 def parse_strategies(env_val: str):
-    strategies = None
+    strategies: List[PluginStrategy] = None
     try:
         strategies_config = json.loads(env_val)
         if isinstance(strategies_config, list):
@@ -95,12 +95,12 @@ class PluginWorkerRPC:
         """Scans the plugin directory and returns a manifest of available actions."""
         if not self.plugins_dir.exists():
             return {}
-            
+
         manifest = {}
         for item in self.plugins_dir.iterdir():
             if not item.is_dir():
                 continue
-                
+
             mtime = self._get_plugin_mtime(item)
             if item.name in self.manager.plugins and self.plugins_mtimes.get(item.name) == mtime:
                 actions = self.manager.plugins[item.name]["actions"]
@@ -119,33 +119,38 @@ class PluginWorkerRPC:
                     }
                     for name, action in actions.items()
                 }
-        
+
         self.actions_manifest = manifest
         return manifest
 
-    def invoke(self, plugin_name: str, action_name: str, kwargs: dict) -> any:
+    def invoke(self, plugin_name: str, action_name: str, kwargs: dict) -> Any:
         """Invokes a specific action on a specific plugin."""
         if plugin_name not in self.manager.plugins:
             raise ValueError(f"Plugin {plugin_name} not found or not loaded.")
-            
+
         plugin = self.manager.plugins[plugin_name]
         if action_name not in plugin["actions"]:
             raise ValueError(f"Action {action_name} not found in plugin {plugin_name}.")
-            
+
         action = plugin["actions"][action_name]
-        
+
         # Coerce kwargs based on signature_info
         for k, param_info in action.signature_info["parameters"].items():
             if k in kwargs:
                 t = param_info["type"]
                 v = kwargs[k]
                 try:
-                    if t == "int" and not isinstance(v, int): kwargs[k] = int(v)
-                    elif t == "float" and not isinstance(v, float): kwargs[k] = float(v)
-                    elif t == "str" and not isinstance(v, str): kwargs[k] = str(v)
+                    if t == "int" and not isinstance(v, int):
+                        kwargs[k] = int(v)
+                    elif t == "float" and not isinstance(v, float):
+                        kwargs[k] = float(v)
+                    elif t == "str" and not isinstance(v, str):
+                        kwargs[k] = str(v)
                     elif t == "bool" and not isinstance(v, bool):
-                        if isinstance(v, str): kwargs[k] = v.lower() in ("true", "1", "yes")
-                        else: kwargs[k] = bool(v)
+                        if isinstance(v, str):
+                            kwargs[k] = v.lower() in ("true", "1", "yes")
+                        else:
+                            kwargs[k] = bool(v)
                 except (ValueError, TypeError):
                     raise ValueError(f"Failed to coerce argument '{k}' to type '{t}': {v}")
 
@@ -159,13 +164,13 @@ class PluginWorkerRPC:
 def start_worker(plugins_dir: str, port: int = 0):
     server = ThreadingXMLRPCServer(("127.0.0.1", port), requestHandler=AuthXMLRPCRequestHandler, allow_none=True)
     actual_port = server.server_address[1]
-    
+
     # Print exactly this string so the parent process can scrape the port
     print(f"RPC_PORT:{actual_port}", flush=True)
-    
+
     rpc_instance = PluginWorkerRPC(Path(plugins_dir))
     server.register_instance(rpc_instance)
-    
+
     logger.info(f"Starting Plugin Worker on port {actual_port} for directory {plugins_dir}")
     server.serve_forever()
 
@@ -173,6 +178,6 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python worker.py <plugins_directory>")
         sys.exit(1)
-    
+
     logging.basicConfig(level=logging.INFO)
     start_worker(sys.argv[1])

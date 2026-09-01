@@ -30,15 +30,15 @@ class PluginClient:
         self.proxy = None
         self.lock = threading.Lock()
         self.auth_token = None
-        
+
     def start_worker(self):
         import os
         env = os.environ.copy()
-        
+
         # Scrub PyInstaller environment variables so they don't break the standalone python
         env.pop("PYTHONPATH", None)
         env.pop("PYTHONHOME", None)
-        
+
         # PyInstaller modifies PATH to prepend sys._MEIPASS. We must remove it
         # or else C extensions (like numpy) will load conflicting DLLs from the host bundle.
         if hasattr(sys, "_MEIPASS"):
@@ -46,7 +46,7 @@ class PluginClient:
             # Filter out the MEIPASS directory
             clean_paths = [p for p in path_env.split(os.pathsep) if p != sys._MEIPASS and p != sys._MEIPASS + "\\"]
             env["PATH"] = os.pathsep.join(clean_paths)
-        
+
         # Strip PyInstaller environment modifications so standalone python doesn't crash
         for var in ["PYTHONPATH", "PYTHONHOME", "PATH"]:
             orig_var = f"ORIG_{var}"
@@ -56,37 +56,37 @@ class PluginClient:
                 # We shouldn't delete PATH, but PYTHONPATH/PYTHONHOME are fine
                 if var != "PATH":
                     del env[var]
-                
+
         import importlib.util
         spec = importlib.util.find_spec("evoker.worker")
         if not spec or not spec.origin:
             raise RuntimeError("Cannot find evoker.worker. Is evoker installed?")
-            
+
         worker_script = Path(spec.origin)
         evoker_pkg_dir = worker_script.parent
-        
+
         # Set PYTHONPATH so the standalone python can import it
         env["PYTHONPATH"] = str(evoker_pkg_dir.parent)
-        
+
         # Also, pythons directory might be in evoker_client
         client_dir = Path(__file__).parent
-        
+
         if self.strategies is not None:
             env["EVOKER_STRATEGIES"] = json.dumps(self.strategies)
-            
+
         if self.injected_packages is not None:
             env["EVOKER_INJECTED_PACKAGES"] = json.dumps([str(p.resolve()) for p in self.injected_packages])
-            
+
         import os
         self.auth_token = os.urandom(16).hex()
         env["EVOKER_AUTH_TOKEN"] = self.auth_token
 
-        
+
         # Determine which python executable to use.
-        # Check if any plugin in plugins_dir has a .venv we can use, 
+        # Check if any plugin in plugins_dir has a .venv we can use,
         # or check the common pythons directory.
         python_exe = Path(sys.executable)
-        
+
         # 1. Check for a .venv in any of the plugins
         if self.plugins_dir.exists():
             for plugin_dir in sorted(self.plugins_dir.iterdir()):
@@ -95,11 +95,11 @@ class PluginClient:
                         venv_exe = plugin_dir / ".venv" / "Scripts" / "python.exe"
                     else:
                         venv_exe = plugin_dir / ".venv" / "bin" / "python"
-                        
+
                     if venv_exe.exists():
                         python_exe = venv_exe
                         break
-        
+
         # 2. Check the common pythons directory
         if python_exe == Path(sys.executable):
             try:
@@ -143,19 +143,19 @@ class PluginClient:
             text=True,
             env=env
         )
-        
+
         # Scrape stdout for the assigned port
         port = None
         start_time = time.time()
         output_lines = []
-        
+
         q = queue.Queue()
         def read_port():
             for line in iter(self.worker_process.stdout.readline, ''):
                 q.put(line)
         t = threading.Thread(target=read_port, daemon=True)
         t.start()
-        
+
         while time.time() - start_time < 5:
             try:
                 line = q.get(timeout=0.5)
@@ -166,14 +166,14 @@ class PluginClient:
             except queue.Empty:
                 if self.worker_process.poll() is not None:
                     break
-                
+
         if port is None:
             # Drain queue to capture full output before stopping worker
             while not q.empty():
                 output_lines.append(q.get())
             self.stop_worker()
             raise RuntimeError(f"Failed to start worker or get port.\npython_exe: {python_exe} (exists: {Path(python_exe).exists()})\nworker_script: {worker_script} (exists: {Path(worker_script).exists()})\nWorker output:\n{''.join(output_lines)}")
-            
+
         def forward_stdout():
             while True:
                 try:
@@ -182,16 +182,16 @@ class PluginClient:
                 except queue.Empty:
                     if self.worker_process and self.worker_process.poll() is not None:
                         break
-                        
+
         threading.Thread(target=forward_stdout, daemon=True).start()
-            
+
         self.proxy = xmlrpc.client.ServerProxy(
-            f"http://127.0.0.1:{port}", 
+            f"http://127.0.0.1:{port}",
             headers=(("X-Evoker-Auth", self.auth_token),),
             allow_none=True,
             use_builtin_types=True
         )
-        
+
     def stop_worker(self):
         if self.worker_process:
             self.worker_process.terminate()
@@ -202,11 +202,11 @@ class PluginClient:
                 self.worker_process.wait()
             self.worker_process = None
         self.proxy = None
-            
+
     def restart_worker(self):
         self.stop_worker()
         self.start_worker()
-            
+
     def _check_worker(self):
         if self.worker_process and self.worker_process.poll() is not None:
             rc = self.worker_process.returncode
@@ -225,8 +225,8 @@ class PluginClient:
             except OSError as e:
                 self.stop_worker()
                 raise WorkerDiedError(f"Worker connection error: {e}")
-        
-    def run_action(self, plugin_name: str, action_name: str, kwargs: dict) -> any:
+
+    def run_action(self, plugin_name: str, action_name: str, kwargs: dict) -> Any:
         """
         Executes a plugin action.
         
