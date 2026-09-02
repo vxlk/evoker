@@ -41,7 +41,7 @@ These native bindings include **Transparent Runtime Bootstrapping**. This means 
 
 ## Installation
 
-Evoker downloads and bundles a standalone Python interpreter during its installation phase. This ensures that plugins can run in fully isolated environments without relying on the end-user's system Python.
+Evoker automatically downloads and extracts a standalone Python interpreter dynamically on first boot via `PluginClient` or the CLI. This ensures that plugins can run in fully isolated environments without relying on the end-user's system Python.
 
 To install Evoker for your Python host application:
 
@@ -94,7 +94,7 @@ For a comprehensive, full-system overview of how to build an Evoker application 
 
 👉 **[Evoker Example Host Repository](https://github.com/vxlk/evoker-example)**
 
-You can also see the local [examples/README.md](examples/README.md) directory for a deeper dive.
+You can also see the local [hosts/python/examples/README.md](hosts/python/examples/README.md) directory for a deeper dive.
 
 ## Documentation
 
