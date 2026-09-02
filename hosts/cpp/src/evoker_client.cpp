@@ -322,7 +322,7 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
     };
 
     auto read_port_future = std::async(std::launch::async, [&]() {
-        for (int i = 0; i < 50; ++i) {
+        while (true) {
             std::string line = read_line();
             if (line.empty()) {
                 break;
@@ -330,13 +330,17 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
             if (line.rfind("RPC_PORT:", 0) == 0) {
                 try {
                     return std::stoi(line.substr(9));
-                } catch (...) {}
+                } catch (...) {
+                    return 0;
+                }
+            } else {
+                std::cout << line << std::endl;
             }
         }
         return 0;
     });
 
-    if (read_port_future.wait_for(std::chrono::seconds(5)) == std::future_status::ready) {
+    if (read_port_future.wait_for(std::chrono::seconds(120)) == std::future_status::ready) {
         m_port = read_port_future.get();
         if (m_port != 0) found_port = true;
     }
