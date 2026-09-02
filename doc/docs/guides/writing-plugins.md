@@ -40,6 +40,10 @@ plugins/
         └── numpy-1.26.4-cp311-cp311-win_amd64.whl
 ```
 
+:::warning Dependency Architecture (Free-threaded Python)
+Evoker uses a free-threaded worker to achieve true parallelism without the GIL. This means any Python packages you specify in `requirements.txt` with native C-extensions must supply free-threaded wheels (e.g. `cp313t`). If they do not, `pip` will fall back to compiling the extension from source, which will fail if a C compiler is not available on the deployment machine.
+:::
+
 ---
 
 ## The Plugin Manifest (`manifest.json`)

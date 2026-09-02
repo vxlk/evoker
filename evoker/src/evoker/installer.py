@@ -73,7 +73,24 @@ def install_plugin_deps(plugin_path: Path) -> bool:
             result = subprocess.run(build_cmd, check=True, capture_output=True, text=True)
             logger.debug(f"Pip wheel output for {plugin_path.name}: {result.stdout}")
         except subprocess.CalledProcessError as e:
-            error_msg = f"Failed to build wheels for {plugin_path.name}. Exit code: {e.returncode}\n{e.stderr}"
+            import re
+            
+            # Combine stdout and stderr as pip sometimes writes build errors to stdout
+            full_output = getattr(e, 'stdout', '') + '\n' + getattr(e, 'stderr', '')
+            
+            # Look for packages that failed to build from source
+            failed_packages = re.findall(r"Failed to build\s+([^\s]+)", full_output)
+            if not failed_packages:
+                # Alternatively, check for "Building wheel for X" followed by an error
+                building = re.findall(r"Building wheel for\s+([^\s]+)", full_output)
+                if building:
+                    failed_packages = [building[-1]]
+                    
+            if failed_packages:
+                pkg_list = ", ".join(set(failed_packages))
+                error_msg = f"Failed to build wheels for {plugin_path.name}. The package(s) '{pkg_list}' do not have free-threaded (cp313t) wheels available on PyPI, and a source build failed. Please install a C compiler or remove the dependency."
+            else:
+                error_msg = f"Failed to build wheels for {plugin_path.name}. Exit code: {e.returncode}\n{full_output}"
             logger.error(error_msg)
             raise DependencyInstallError(error_msg)
 
