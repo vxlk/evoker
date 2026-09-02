@@ -1,5 +1,5 @@
 import os
-from PyInstaller.utils.hooks import collect_data_files, get_package_paths
+from PyInstaller.utils.hooks import get_package_paths  # type: ignore
 
 # This hook tells PyInstaller to automatically bundle all data files within `evoker`
 # Whenever a Pyinstaller build is triggered on an app that imports `evoker`,

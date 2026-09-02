@@ -18,7 +18,7 @@ class EvokerMarshaller(xmlrpc.client.Marshaller):
         write(escape(value).replace('\r', '&#13;'))
         write("</string></value>\n")
 
-xmlrpc.client.Marshaller.dispatch[str] = EvokerMarshaller.dump_unicode
+xmlrpc.client.Marshaller.dispatch[str] = EvokerMarshaller.dump_unicode  # type: ignore
 
 class KeepAliveTransport(xmlrpc.client.Transport):
     def __init__(self, headers=None, use_builtin_types=False, *args, **kwargs):

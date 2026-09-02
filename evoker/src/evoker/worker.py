@@ -1,5 +1,13 @@
 import sys
 import os
+import logging
+import json
+import socketserver
+from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+from pathlib import Path
+from typing import Any, List, Optional
+from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy, PluginStrategy
+import xmlrpc.client
 
 def _prefix_path(p: str) -> str:
     return ("\\\\?\\" + os.path.abspath(p)) if os.name == 'nt' and os.path.isabs(p) and not p.startswith("\\\\?\\") else p
@@ -10,16 +18,7 @@ if os.name == 'nt':
 if "EVOKER_PKG_DIR" in os.environ:
     sys.path.append(_prefix_path(os.environ["EVOKER_PKG_DIR"]))
 if getattr(sys, "frozen", False):
-    sys.path.insert(0, _prefix_path(sys._MEIPASS))
-import logging
-import os
-import json
-import socketserver
-from xmlrpc.server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
-from pathlib import Path
-from typing import Any, List, Optional
-from evoker.manager import PluginManager, PrefixStrategy, ExactMatchStrategy, PluginStrategy
-import xmlrpc.client
+    sys.path.insert(0, _prefix_path(getattr(sys, "_MEIPASS")))
 
 class EvokerMarshaller(xmlrpc.client.Marshaller):
     def dump_unicode(self, value, write, escape=xmlrpc.client.escape):
@@ -31,7 +30,7 @@ class EvokerMarshaller(xmlrpc.client.Marshaller):
         write(escape(value).replace('\r', '&#13;'))
         write("</string></value>\n")
 
-xmlrpc.client.Marshaller.dispatch[str] = EvokerMarshaller.dump_unicode
+xmlrpc.client.Marshaller.dispatch[str] = EvokerMarshaller.dump_unicode  # type: ignore
 
 _AUTH_TOKEN = os.environ.pop("EVOKER_AUTH_TOKEN", None)
 
@@ -93,8 +92,8 @@ class PluginWorkerRPC:
 
         self.manager = PluginManager(strategies=strategies)
         self.plugins_dir = plugins_dir
-        self.actions_manifest = {}
-        self.plugins_mtimes = {}
+        self.actions_manifest: dict[str, Any] = {}
+        self.plugins_mtimes: dict[str, float] = {}
 
     def _get_plugin_mtime(self, plugin_dir: Path) -> float:
         mtime = plugin_dir.stat().st_mtime
@@ -153,7 +152,7 @@ class PluginWorkerRPC:
         """Invokes a specific action on a specific plugin."""
         if plugin_name not in self.manager.plugins:
             self.scan()
-            
+
         if plugin_name not in self.manager.plugins:
             raise ValueError(f"Plugin {plugin_name} not found or not loaded.")
 

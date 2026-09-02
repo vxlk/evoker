@@ -51,7 +51,7 @@ class PluginAction:
 
 class PluginManager:
     def __init__(self, strategies: Optional[List[PluginStrategy]] = None):
-        self.plugins = {}
+        self.plugins: dict[str, Any] = {}
         if "evoker_plugins" not in sys.modules:
             import types
             sys.modules["evoker_plugins"] = types.ModuleType("evoker_plugins")
@@ -192,7 +192,7 @@ class PluginManager:
                 continue
 
             # Serialize signature info
-            sig_info = {"parameters": {}}
+            sig_info: dict[str, Any] = {"parameters": {}}
             for param_name, param in sig.parameters.items():
                 if param_name == 'self':
                     continue
