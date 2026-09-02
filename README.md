@@ -114,7 +114,7 @@ To run the documentation site locally:
 
 Evoker includes a `dev.py` utility script for streamlining local development tasks.
 
-* `python hosts/python/dev.py install`: Creates a `.venv` (if missing), activates it, and installs development dependencies via `pip install -e .[dev]`.
+* `python hosts/python/dev.py install`: Creates a `.venv` (if missing), activates it, and installs development dependencies via `pip install -e ../../evoker` and `pip install -e .[dev]`.
 * `python hosts/python/dev.py build`: Builds the standard PyInstaller example.
 * `python hosts/python/dev.py docs`: Builds the static Docusaurus site in the `doc/` directory.
 * `python hosts/python/dev.py test`: Activates the virtual environment and runs the test suite using `pytest`.

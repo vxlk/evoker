@@ -42,7 +42,8 @@ pip install ./hosts/python
 For developing Evoker itself, install via editable mode along with `[dev]` dependencies:
 
 ```bash
-pip install -e ./hosts/python[dev]
+pip install -e ./evoker
+pip install -e "./hosts/python[dev]"
 ```
 
 ### Included Development Dependencies
