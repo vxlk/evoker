@@ -8,7 +8,7 @@ description: >-
 
 # Creating an Evoker Plugin
 
-Evoker plugins are stored as directories containing three core files: `manifest.json`, `requirements.txt`, and `main.py`.
+Evoker plugins are stored as directories containing three core files: `manifest.json`, `requirements.txt`, and `__init__.py`.
 
 ## 1. Create the Directory Structure
 
@@ -16,7 +16,7 @@ Evoker plugins are stored as directories containing three core files: `manifest.
 hosts/python/examples/plugins/my_new_plugin/
 ├── manifest.json
 ├── requirements.txt
-└── main.py
+└── __init__.py
 ```
 
 ## 2. Define `manifest.json`
@@ -52,9 +52,9 @@ pyarrow
 # Add other dependencies here
 ```
 
-## 4. Implement `main.py`
+## 4. Implement `__init__.py`
 
-The main file must export functions corresponding to the `action` strings defined in the manifest.
+The init file must export functions corresponding to the `action` strings defined in the manifest.
 
 ```python
 import pyarrow as pa

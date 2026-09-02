@@ -26,9 +26,9 @@ Evoker is a plugin framework that allows a host application (written in C++ or P
 - Uses a standalone Freethreaded (`cp313t`) Python build distributed with Evoker to avoid GIL restrictions.
 
 ### 2. Plugin Loading (`evoker/manager.py` & `evoker/installer.py`)
-- Plugins are stored in a `plugins/` directory. Each plugin has a `manifest.json`, `main.py`, and `requirements.txt`.
+- Plugins are stored in a `plugins/` directory. Each plugin has a `manifest.json`, `__init__.py`, and `requirements.txt`.
 - When the worker boots, `installer.py` reads `requirements.txt` and automatically builds `.whl` files (offline caching) and installs them into a plugin-specific `.venv`.
-- `manager.py` then dynamically loads the `main.py` using `importlib`, injecting the plugin's `.venv/Lib/site-packages` into `sys.path` so it can find its dependencies.
+- `manager.py` then dynamically loads the `__init__.py` using `importlib`, injecting the plugin's `.venv/Lib/site-packages` into `sys.path` so it can find its dependencies.
 
 ### 3. The Client (`hosts/python/src/evoker_client/client.py`)
 - Python reference implementation of the host-side client.
@@ -43,6 +43,6 @@ Evoker is a plugin framework that allows a host application (written in C++ or P
 ```text
 plugins/my_plugin/
 ├── manifest.json       # Metadata and context menu strategies
-├── main.py             # Entry point (must define `on_start` or custom actions)
+├── __init__.py         # Entry point (must define `on_start` or custom actions)
 └── requirements.txt    # Standard pip requirements
 ```
