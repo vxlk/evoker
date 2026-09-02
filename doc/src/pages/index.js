@@ -146,7 +146,7 @@ function HowItWorksSection() {
             <div className={styles.stepContent}>
               <Heading as="h3">Call it from your app</Heading>
               <CodeBlock language="python" title="host.py">
-{`from plugin_host.client import PluginClient
+{`from evoker_client.client import PluginClient
 
 client = PluginClient(Path("plugins"))
 client.start_worker()

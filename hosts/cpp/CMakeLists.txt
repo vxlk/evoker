@@ -23,11 +23,19 @@ else()
 endif()
 FetchContent_MakeAvailable(httplib)
 
+# Fetch nlohmann_json
+FetchContent_Declare(
+    nlohmann_json
+    URL https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
 # Fetch tinyxml2
 FetchContent_Declare(
     tinyxml2
     URL https://github.com/leethomason/tinyxml2/archive/refs/tags/9.0.0.tar.gz
 )
+set(tinyxml2_BUILD_TESTING OFF)
 FetchContent_MakeAvailable(tinyxml2)
 
 # Reproc for process management
@@ -41,7 +49,7 @@ FetchContent_MakeAvailable(reproc)
 
 add_library(evoker_host src/evoker_client.cpp)
 target_include_directories(evoker_host PUBLIC include)
-target_link_libraries(evoker_host PRIVATE httplib::httplib tinyxml2 reproc++)
+target_link_libraries(evoker_host PRIVATE httplib::httplib tinyxml2 reproc++ nlohmann_json::nlohmann_json)
 if (OpenSSL_FOUND)
     target_compile_definitions(evoker_host PRIVATE EVOKER_HAS_TLS)
 endif()
@@ -62,12 +70,12 @@ if (DEFINED EVOKER_TEST_ASSETS)
 endif()
 
 add_executable(cpp_unit_tests tests/unit_tests.cpp src/evoker_client.cpp)
-target_link_libraries(cpp_unit_tests PRIVATE tinyxml2 reproc++ reproc httplib::httplib)
+target_link_libraries(cpp_unit_tests PRIVATE tinyxml2 reproc++ reproc httplib::httplib nlohmann_json::nlohmann_json)
 target_include_directories(cpp_unit_tests PRIVATE include)
 target_compile_definitions(cpp_unit_tests PRIVATE EVOKER_CLIENT_TESTING)
 
 add_executable(cpp_fuzz_test tests/fuzz_test.cpp src/evoker_client.cpp)
-target_link_libraries(cpp_fuzz_test PRIVATE tinyxml2 reproc++ reproc httplib::httplib)
+target_link_libraries(cpp_fuzz_test PRIVATE tinyxml2 reproc++ reproc httplib::httplib nlohmann_json::nlohmann_json)
 target_include_directories(cpp_fuzz_test PRIVATE include)
 target_compile_definitions(cpp_fuzz_test PRIVATE EVOKER_CLIENT_TESTING)
 
