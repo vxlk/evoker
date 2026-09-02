@@ -1,9 +1,16 @@
 import sys
 import os
+
+def _prefix_path(p: str) -> str:
+    return ("\\\\?\\" + os.path.abspath(p)) if os.name == 'nt' and os.path.isabs(p) and not p.startswith("\\\\?\\") else p
+
+if os.name == 'nt':
+    sys.path = [_prefix_path(p) for p in sys.path]
+
 if "EVOKER_PKG_DIR" in os.environ:
-    sys.path.append(os.environ["EVOKER_PKG_DIR"])
+    sys.path.append(_prefix_path(os.environ["EVOKER_PKG_DIR"]))
 if getattr(sys, "frozen", False):
-    sys.path.insert(0, sys._MEIPASS)
+    sys.path.insert(0, _prefix_path(sys._MEIPASS))
 import logging
 import os
 import json
@@ -53,6 +60,7 @@ def parse_injected_packages(env_val: str):
         injected = json.loads(env_val)
         if isinstance(injected, list):
             for p in reversed(injected):
+                p = _prefix_path(p)
                 if p not in sys.path:
                     sys.path.insert(0, p)
     except Exception as e:
