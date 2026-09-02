@@ -118,16 +118,21 @@ pub fn bootstrap_python() -> Result<PathBuf, String> {
     println!("Bootstrapping Python for Evoker...");
     
     // Fetch latest release JSON
-    let output = Command::new("curl")
-        .args(&["-sL", "https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest"])
-        .output()
-        .map_err(|e| format!("Failed to run curl: {}", e))?;
+    let client = reqwest::blocking::Client::builder()
+        .user_agent("evoker-host-bootstrap")
+        .build()
+        .map_err(|e| format!("Failed to build reqwest client: {}", e))?;
         
-    if !output.status.success() {
-        return Err(format!("curl failed: {}", String::from_utf8_lossy(&output.stderr)));
+    let resp = client.get("https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest")
+        .send()
+        .map_err(|e| format!("Failed to fetch release info: {}", e))?;
+        
+    if !resp.status().is_success() {
+        return Err(format!("Failed to fetch release info: HTTP {}", resp.status()));
     }
         
-    let json: serde_json::Value = serde_json::from_slice(&output.stdout).map_err(|e| e.to_string())?;
+    let json_bytes = resp.bytes().map_err(|e| e.to_string())?;
+    let json: serde_json::Value = serde_json::from_slice(&json_bytes).map_err(|e| e.to_string())?;
     
     let mut download_url = String::new();
     if let Some(assets) = json.get("assets").and_then(|a| a.as_array()) {
@@ -151,28 +156,22 @@ pub fn bootstrap_python() -> Result<PathBuf, String> {
     }
 
     println!("Downloading {} ...", download_url);
-    let archive_path = evoker_dir.join("python.tar.gz");
     
-    let status = Command::new("curl")
-        .args(&["-sL", &download_url, "-o", archive_path.to_str().unwrap()])
-        .output()
-        .map_err(|e| e.to_string())?;
+    let resp = client.get(&download_url)
+        .send()
+        .map_err(|e| format!("Failed to download python: {}", e))?;
         
-    if !status.status.success() {
-        return Err(format!("Failed to download python: {}", String::from_utf8_lossy(&status.stderr)));
+    if !resp.status().is_success() {
+        return Err(format!("Failed to download python: HTTP {}", resp.status()));
     }
     
     println!("Extracting python...");
-    let tar_status = Command::new("tar")
-        .args(&["-xf", archive_path.to_str().unwrap(), "-C", target_dir.to_str().unwrap()])
-        .output()
-        .map_err(|e| e.to_string())?;
-        
-    if !tar_status.status.success() {
-        return Err(format!("Failed to extract python archive: {}", String::from_utf8_lossy(&tar_status.stderr)));
-    }
     
-    let _ = std::fs::remove_file(archive_path);
+    // Decompress the tar.gz stream directly into the target directory
+    let tar = flate2::read::GzDecoder::new(resp);
+    let mut archive = tar::Archive::new(tar);
+    
+    archive.unpack(&target_dir).map_err(|e| format!("Failed to extract python archive: {}", e))?;
     
     if exe_path.exists() {
         // Install the evoker runtime
