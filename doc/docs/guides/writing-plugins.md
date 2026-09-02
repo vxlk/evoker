@@ -138,7 +138,7 @@ Because your plugin runs in a completely separate process from the host applicat
 
 Functions should return standard Python primitives that can be serialized:
 - Strings (`str`)
-- Integers (`int`)
+- Integers (`int`, bounded to 32-bit signed: -2147483648 to 2147483647)
 - Floats (`float`)
 - Booleans (`bool`)
 - Dictionaries (`dict`, with string keys)

@@ -288,5 +288,10 @@ class PluginClient:
             except OSError as e:
                 self.stop_worker()
                 raise WorkerDiedError(f"Worker connection error: {e}")
+            except OverflowError:
+                for k, v in kwargs.items():
+                    if isinstance(v, int) and not (-2147483648 <= v <= 2147483647):
+                        raise ValueError(f"Argument '{k}' exceeds XML-RPC integer limits (must be between -2147483648 and 2147483647)")
+                raise ValueError("An integer argument exceeds XML-RPC limits (must be between -2147483648 and 2147483647)")
             except Exception as e:
                 raise ValueError(f"RPC Serialization or Connection Error: {e}")
