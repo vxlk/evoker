@@ -117,7 +117,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e "./evoker"
           pip install -e "./hosts/python[dev]"
-      - run: pytest hosts/python/tests -m slow
+      - run: pytest hosts/python/tests -o addopts="" -m slow
 
   release:
     name: Build Release Binaries
