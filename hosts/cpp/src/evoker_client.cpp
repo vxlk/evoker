@@ -91,7 +91,8 @@ PluginClient::~PluginClient() {
 
 static bool ensure_evoker_installed(const std::string& exe_path) {
     reproc::process test_import;
-    std::string check_script = "import importlib.metadata; import sys; sys.exit(0 if importlib.metadata.version('evoker') == '0.1.1' else 1)";
+    std::string version = EVOKER_VERSION;
+    std::string check_script = "import importlib.metadata; import sys; sys.exit(0 if importlib.metadata.version('evoker') == '" + version + "' else 1)";
     std::vector<std::string> test_args = {exe_path, "-c", check_script};
     if (test_import.start(test_args) == std::error_code{} && test_import.wait(reproc::infinite).first == 0) {
         return true;

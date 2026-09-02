@@ -48,7 +48,8 @@ pub struct ExactMatchStrategy {
 
 fn ensure_evoker_installed(exe_path: &PathBuf) -> Result<(), String> {
     // Verify import succeeds and version matches
-    let check_script = "import importlib.metadata; import sys; sys.exit(0 if importlib.metadata.version('evoker') == '0.1.1' else 1)";
+    let version = env!("CARGO_PKG_VERSION");
+    let check_script = format!("import importlib.metadata; import sys; sys.exit(0 if importlib.metadata.version('evoker') == '{}' else 1)", version);
     let import_status = Command::new(exe_path)
         .args(&["-c", check_script])
         .status()

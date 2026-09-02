@@ -20,17 +20,14 @@ if "EVOKER_PKG_DIR" in os.environ:
 if getattr(sys, "frozen", False):
     sys.path.insert(0, _prefix_path(getattr(sys, "_MEIPASS")))
 
-class EvokerMarshaller(xmlrpc.client.Marshaller):
-    def dump_unicode(self, value, write, escape=xmlrpc.client.escape):
-        for c in value:
-            code = ord(c)
-            if code < 0x20 and code not in (0x09, 0x0a, 0x0d):
-                raise ValueError("Control characters are not allowed in XML-RPC strings")
-        write("<value><string>")
-        write(escape(value).replace('\r', '&#13;'))
-        write("</string></value>\n")
-
-xmlrpc.client.Marshaller.dispatch[str] = EvokerMarshaller.dump_unicode  # type: ignore
+_orig_escape = xmlrpc.client.escape
+def evoker_escape(s):
+    for c in s:
+        code = ord(c)
+        if code < 0x20 and code not in (0x09, 0x0a, 0x0d):
+            raise ValueError("Control characters are not allowed in XML-RPC strings")
+    return _orig_escape(s).replace('\r', '&#13;')
+xmlrpc.client.escape = evoker_escape  # type: ignore
 
 _AUTH_TOKEN = os.environ.pop("EVOKER_AUTH_TOKEN", None)
 

@@ -8,21 +8,18 @@ from typing import Optional, List, Dict, Any
 import threading
 import queue
 
-class EvokerMarshaller(xmlrpc.client.Marshaller):
-    def dump_unicode(self, value, write, escape=xmlrpc.client.escape):
-        for c in value:
-            code = ord(c)
-            if code < 0x20 and code not in (0x09, 0x0a, 0x0d):
-                raise ValueError("Control characters are not allowed in XML-RPC strings")
-        write("<value><string>")
-        write(escape(value).replace('\r', '&#13;'))
-        write("</string></value>\n")
-
-xmlrpc.client.Marshaller.dispatch[str] = EvokerMarshaller.dump_unicode  # type: ignore
+_orig_escape = xmlrpc.client.escape
+def evoker_escape(s):
+    for c in s:
+        code = ord(c)
+        if code < 0x20 and code not in (0x09, 0x0a, 0x0d):
+            raise ValueError("Control characters are not allowed in XML-RPC strings")
+    return _orig_escape(s).replace('\r', '&#13;')
+xmlrpc.client.escape = evoker_escape
 
 class KeepAliveTransport(xmlrpc.client.Transport):
-    def __init__(self, headers=None, use_builtin_types=False, *args, **kwargs):
-        super().__init__(use_builtin_types=use_builtin_types, *args, **kwargs)
+    def __init__(self, headers=None, use_datetime=False, use_builtin_types=True, *args, **kwargs):
+        super().__init__(use_datetime=use_datetime, use_builtin_types=use_builtin_types, headers=headers or (), *args, **kwargs)
         self._extra_headers = list(headers) if headers else []
         self._connection = (None, None)
 
@@ -43,6 +40,27 @@ class KeepAliveTransport(xmlrpc.client.Transport):
         if self._connection[1]:
             self._connection[1].close()
             self._connection = (None, None)
+
+def ensure_evoker_installed(python_exe: Path):
+    try:
+        import subprocess
+        subprocess.check_call([str(python_exe), "-c", "import evoker.worker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        repo_path = Path(__file__).resolve()
+        while repo_path.parent != repo_path:
+            if (repo_path / "evoker" / "pyproject.toml").exists():
+                break
+            repo_path = repo_path.parent
+        
+        if (repo_path / "evoker" / "pyproject.toml").exists():
+            evoker_pkg = repo_path / "evoker"
+            try:
+                subprocess.check_call([str(python_exe), "-m", "pip", "install", str(evoker_pkg)])
+                subprocess.check_call([str(python_exe), "-c", "import evoker.worker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(f"Failed to install evoker runtime into python interpreter {python_exe}") from e
+        else:
+            raise RuntimeError(f"evoker is not installed in {python_exe} and evoker package directory not found for auto-installation.")
 
 class WorkerDiedError(Exception):
     pass
