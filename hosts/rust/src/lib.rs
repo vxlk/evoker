@@ -453,3 +453,38 @@ mod tests {
         assert_eq!(json2, r#"{"type":"exact","value":"on_start","args":["app_context"]}"#);
     }
 }
+
+pub fn json_to_xmlrpc(val: serde_json::Value) -> Result<xmlrpc::Value, String> {
+    match val {
+        serde_json::Value::Null => Ok(xmlrpc::Value::Nil),
+        serde_json::Value::Bool(b) => Ok(xmlrpc::Value::Bool(b)),
+        serde_json::Value::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                if i > 2147483647 || i < -2147483648 {
+                    Err(format!("Integer {} exceeds XML-RPC limits", i))
+                } else {
+                    Ok(xmlrpc::Value::Int(i as i32))
+                }
+            } else if let Some(f) = n.as_f64() {
+                Ok(xmlrpc::Value::Double(f))
+            } else {
+                Ok(xmlrpc::Value::Nil)
+            }
+        },
+        serde_json::Value::String(s) => Ok(xmlrpc::Value::String(s)),
+        serde_json::Value::Array(arr) => {
+            let mut xml_arr = Vec::new();
+            for item in arr {
+                xml_arr.push(json_to_xmlrpc(item)?);
+            }
+            Ok(xmlrpc::Value::Array(xml_arr))
+        },
+        serde_json::Value::Object(obj) => {
+            let mut xml_obj = std::collections::BTreeMap::new();
+            for (k, v) in obj {
+                xml_obj.insert(k, json_to_xmlrpc(v)?);
+            }
+            Ok(xmlrpc::Value::Struct(xml_obj))
+        },
+    }
+}

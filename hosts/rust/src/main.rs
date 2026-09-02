@@ -19,13 +19,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let mut kwargs = std::collections::BTreeMap::new();
     for (k, v) in kwargs_json {
-        let xmlrpc_v = match v {
-            Value::Null => xmlrpc::Value::Nil,
-            Value::Bool(b) => xmlrpc::Value::Bool(b),
-            Value::Number(n) => if let Some(i) = n.as_i64() { xmlrpc::Value::Int(i as i32) } else if let Some(f) = n.as_f64() { xmlrpc::Value::Double(f) } else { xmlrpc::Value::Nil },
-            Value::String(s) => xmlrpc::Value::String(s),
-            _ => xmlrpc::Value::Nil, // Simplified for CLI
-        };
+        let xmlrpc_v = evoker_host::json_to_xmlrpc(v).map_err(|e| format!("Error converting argument {}: {}", k, e))?;
         kwargs.insert(k, xmlrpc_v);
     }
 
