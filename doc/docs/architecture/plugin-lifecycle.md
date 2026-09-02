@@ -10,6 +10,10 @@ The Evoker plugin lifecycle encompasses four distinct phases: **Initialization**
 
 This document provides a detailed end-to-end breakdown of each phase, detailing how the Host application and Worker subprocess coordinate via XML-RPC, environment serialization, dynamic module introspection, and process management.
 
+:::info Shared Worker Boundary
+A single `PluginClient` manages one worker process and one virtual environment for a given `plugins_dir`. All plugins located within the same directory share this worker and virtual environment. To run plugins in isolated environments, place them in separate directories and spawn a separate `PluginClient` for each.
+:::
+
 ---
 
 ## Lifecycle Overview Sequence

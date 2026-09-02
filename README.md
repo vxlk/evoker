@@ -32,9 +32,9 @@ Evoker isn't just for Python host applications! We provide official, fully-featu
 These native bindings include **Transparent Runtime Bootstrapping**. This means your native C++ or Rust application does **not** require the end-user to have Python installed on their system. The Evoker client will automatically download, extract, and provision an isolated `python-build-standalone` runtime behind the scenes!
 
 ## Core Features
-*   **Multi-Headed Isolation**: Plugins run in their own dedicated Python environments (via XML-RPC). If a plugin crashes, your Host Application stays alive.
+*   **Multi-Headed Isolation**: Plugins run in an isolated Python worker process (via XML-RPC). If a plugin crashes, your Host Application stays alive. (Note: All plugins loaded from the same directory share a single worker process and virtual environment).
 *   **Custom API & Dependency Injection**: Host applications can inject their own Python packages and APIs directly into the `sys.path` of the plugin worker processes using the `injected_packages` parameter. Plugins consume host-provided libraries without needing their own installations.
-*   **Auto-Installing Dependencies**: Drop a `requirements.txt` or an offline `wheels/` folder into a plugin, and Evoker handles the `pip install` transparently upon loading into an isolated virtual environment.
+*   **Auto-Installing Dependencies**: Drop a `requirements.txt` or an offline `wheels/` folder into a plugin, and Evoker handles the `pip install` transparently upon loading into the shared virtual environment for that directory.
 *   **Deep Introspection**: The `PluginManager` dynamically reads type hints and signature defaults, ensuring your Host knows exactly how to invoke the plugin.
 
 ---
