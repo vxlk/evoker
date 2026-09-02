@@ -188,6 +188,8 @@ class PluginClient:
                 python_exe_str = str(python_exe.resolve())
                 if not python_exe_str.startswith("\\\\?\\"):
                     python_exe_str = "\\\\?\\" + python_exe_str
+            if python_exe != Path(sys.executable) and not is_frozen:
+                ensure_evoker_installed(python_exe)
             cmd = [python_exe_str, "-u", str(worker_script), str(self.plugins_dir)]
 
         self.worker_process = subprocess.Popen(
