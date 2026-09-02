@@ -291,8 +291,7 @@ bool PluginClient::start_worker(const std::string& python_exe, const std::string
     env["EVOKER_AUTH_TOKEN"] = m_token;
     
     if (!env.empty()) {
-        options.env.extra.~env();
-        new (&options.env.extra) reproc::env(env);
+        options.env.extra = reproc::env(env);
     }
 
     m_process = std::make_unique<reproc::process>();

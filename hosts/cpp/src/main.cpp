@@ -13,7 +13,12 @@ int main(int argc, char** argv) {
     std::string action = argv[3];
     nlohmann::json args = nlohmann::json::object();
     if (argc >= 5) {
-        args = nlohmann::json::parse(argv[4]);
+        try {
+            args = nlohmann::json::parse(argv[4]);
+        } catch (const nlohmann::json::parse_error& e) {
+            std::cerr << "Error: Invalid JSON argument: " << e.what() << std::endl;
+            return 1;
+        }
     }
 
     evoker::PluginClient client(plugins_dir);
@@ -23,6 +28,7 @@ int main(int argc, char** argv) {
     }
     
     try {
+        client.scan();
         nlohmann::json res = client.invoke(plugin_name, action, args);
         std::cout << res.dump(4) << std::endl;
     } catch (const std::exception& e) {

@@ -1,0 +1,10 @@
+C:\Users\small\Desktop\projects\Evoker\hosts\rust\target\debug\deps\crc32fast-1fa2d0fb29bec8c3.d: C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\lib.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\baseline.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\combine.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\specialized\mod.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\table.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\specialized\pclmulqdq.rs
+
+C:\Users\small\Desktop\projects\Evoker\hosts\rust\target\debug\deps\libcrc32fast-1fa2d0fb29bec8c3.rmeta: C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\lib.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\baseline.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\combine.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\specialized\mod.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\table.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\specialized\pclmulqdq.rs
+
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\lib.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\baseline.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\combine.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\specialized\mod.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\table.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\crc32fast-1.5.1\src\specialized\pclmulqdq.rs:

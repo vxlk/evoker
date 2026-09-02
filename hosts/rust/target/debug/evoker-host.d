@@ -1,0 +1,1 @@
+C:\Users\small\Desktop\projects\Evoker\hosts\rust\target\debug\evoker-host.exe: C:\Users\small\Desktop\projects\Evoker\hosts\rust\src\lib.rs C:\Users\small\Desktop\projects\Evoker\hosts\rust\src\main.rs

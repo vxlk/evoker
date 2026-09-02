@@ -1,0 +1,11 @@
+C:\Users\small\Desktop\projects\Evoker\hosts\rust\target\debug\deps\xmlrpc-fd84b488d46f921b.d: C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\lib.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\error.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\parser.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\request.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\transport.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\utils.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\value.rs
+
+C:\Users\small\Desktop\projects\Evoker\hosts\rust\target\debug\deps\libxmlrpc-fd84b488d46f921b.rmeta: C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\lib.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\error.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\parser.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\request.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\transport.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\utils.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\value.rs
+
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\lib.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\error.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\parser.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\request.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\transport.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\utils.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\xmlrpc-0.15.1\src\value.rs:

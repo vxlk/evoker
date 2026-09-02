@@ -29,6 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Err(format!("Failed to start worker: {}", e).into());
     }
     
+    client.scan()?;
+    
     match client.invoke(plugin_name, action, kwargs) {
         Ok(res) => println!("{:?}", res),
         Err(e) => {

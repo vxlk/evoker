@@ -1,0 +1,12 @@
+C:\Users\small\Desktop\projects\Evoker\hosts\rust\target\debug\deps\tar-7c1d5b715a9e8531.d: C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\lib.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\archive.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\builder.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\entry.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\entry_type.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\error.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\header.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\pax.rs
+
+C:\Users\small\Desktop\projects\Evoker\hosts\rust\target\debug\deps\libtar-7c1d5b715a9e8531.rmeta: C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\lib.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\archive.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\builder.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\entry.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\entry_type.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\error.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\header.rs C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\pax.rs
+
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\lib.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\archive.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\builder.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\entry.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\entry_type.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\error.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\header.rs:
+C:\Users\small\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\tar-0.4.46\src\pax.rs:

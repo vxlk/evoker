@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: evoker
+Version: 0.1.1
+Summary: Evoker worker runtime
+Requires-Python: >=3.10
