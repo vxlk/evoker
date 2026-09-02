@@ -35,9 +35,26 @@ def main():
     if is_frozen:
         plugins_dir = Path(sys.executable).parent / "plugins"
         import shutil
-        if plugins_dir.exists():
-            shutil.rmtree(plugins_dir)
-        shutil.copytree(base_dir / "plugins", plugins_dir)
+        if not plugins_dir.exists():
+            plugins_dir.mkdir(parents=True)
+            
+        src_plugins = base_dir / "plugins"
+        for root, dirs, files in os.walk(src_plugins):
+            # Ignore .venv and wheels
+            if '.venv' in dirs:
+                dirs.remove('.venv')
+            if 'wheels' in dirs:
+                dirs.remove('wheels')
+                
+            rel_path = os.path.relpath(root, src_plugins)
+            dest_dir = plugins_dir / rel_path if rel_path != "." else plugins_dir
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            
+            for file in files:
+                src_file = Path(root) / file
+                dest_file = dest_dir / file
+                if not dest_file.exists() or src_file.stat().st_mtime > dest_file.stat().st_mtime:
+                    shutil.copy2(src_file, dest_file)
     else:
         plugins_dir = base_dir / "plugins"
         
