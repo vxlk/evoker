@@ -18,6 +18,7 @@ When compiling your host application with PyInstaller, **you must use One-Dir mo
 
 ### Why One-File Mode Fails for Plugin Architectures:
 - **Ephemeral Extraction**: One-File mode unzips application binaries into a temporary `_MEIxxxxxx` directory on every run and wipes it upon exit.
+- **Massive Storage Leaks**: Because `PluginClient` launches worker subprocesses using the same binary, every worker launch extracts a *new* 200MB+ `_MEIxxxxxx` directory. These worker temp directories are often not cleaned up cleanly, leaking hundreds of megabytes of disk space per launch.
 - **Destroyed Virtual Environments**: Any plugin virtual environments (`.venv`) or cached wheels created at runtime would be deleted when the process terminates.
 - **External Extensibility**: End users cannot drop new plugins into a `plugins/` folder alongside a single `.exe` file.
 
