@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import collect_data_files, get_package_paths
 # this hook runs and ensures the bundled standalone python environments (and installers)
 # are perfectly packaged into the `_internal` directory without the user needing to
 # configure `datas` in their .spec file!
-datas = collect_data_files('evoker')
+datas = []
 
 # Automatically deploy Evoker HTML documentation to the host's plugins folder
 pkg_base, pkg_dir = get_package_paths('evoker')

@@ -135,9 +135,7 @@ a = Analysis(
     ['examples/host.py'],
     pathex=['src'],
     binaries=[],
-    datas=[
-        ('src/evoker', 'src/evoker'),
-    ],
+    datas=[],
     hiddenimports=['evoker.worker'],
     hookspath=[],
     hooksconfig={},
