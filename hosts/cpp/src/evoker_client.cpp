@@ -397,18 +397,17 @@ nlohmann::json PluginClient::parse_xmlrpc_value(const void* xml_node_ptr) {
         return nlohmann::json(text ? text : "");
     } else if (type == "int" || type == "i4") {
         const char* text = child->GetText();
-        try { return nlohmann::json(text ? std::stoi(text) : 0); } catch (...) { return nlohmann::json(0); }
+        std::string t = text ? text : "";
+        try { return nlohmann::json(std::stoi(t)); } catch (...) { throw std::runtime_error("Invalid integer in XML-RPC response: " + t); }
     } else if (type == "i8") {
         const char* text = child->GetText();
-        try { return nlohmann::json(text ? std::stoll(text) : 0LL); } catch (...) { return nlohmann::json(0LL); }
+        std::string t = text ? text : "";
+        try { return nlohmann::json(std::stoll(t)); } catch (...) { throw std::runtime_error("Invalid i8 in XML-RPC response: " + t); }
     } else if (type == "double") {
         const char* text = child->GetText();
-        if (text) {
-            std::string t = text;
-            if (t == "NaN" || t == "nan") return nlohmann::json(std::numeric_limits<double>::quiet_NaN());
-            try { return nlohmann::json(std::stod(t)); } catch (...) { return nlohmann::json(0.0); }
-        }
-        return nlohmann::json(0.0);
+        std::string t = text ? text : "";
+        if (t == "NaN" || t == "nan") return nlohmann::json(std::numeric_limits<double>::quiet_NaN());
+        try { return nlohmann::json(std::stod(t)); } catch (...) { throw std::runtime_error("Invalid double in XML-RPC response: " + t); }
     } else if (type == "boolean") {
         const char* text = child->GetText();
         return nlohmann::json(text && std::string(text) == "1");
