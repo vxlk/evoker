@@ -414,7 +414,7 @@ nlohmann::json PluginClient::parse_xmlrpc_value(const void* xml_node_ptr) {
         return nlohmann::json(text && std::string(text) == "1");
     } else if (type == "nil") {
         return nlohmann::json();
-    } else if (type == "base64" || type == "dateTime.iso8601") {
+    } else if (type == "dateTime.iso8601") {
         const char* text = child->GetText();
         std::string s = text ? text : "";
         size_t start = s.find_first_not_of(" \n\r\t");
@@ -425,6 +425,31 @@ nlohmann::json PluginClient::parse_xmlrpc_value(const void* xml_node_ptr) {
             s.clear();
         }
         return nlohmann::json(s);
+    } else if (type == "base64") {
+        const char* text = child->GetText();
+        std::string s = text ? text : "";
+        size_t start = s.find_first_not_of(" \n\r\t");
+        if (start != std::string::npos) {
+            s.erase(0, start);
+            s.erase(s.find_last_not_of(" \n\r\t") + 1);
+        } else {
+            s.clear();
+        }
+        
+        std::vector<uint8_t> out;
+        std::vector<int> T(256, -1);
+        for (int i=0; i<64; i++) T["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i]] = i;
+        int val=0, valb=-8;
+        for (uint8_t c : s) {
+            if (T[c] == -1) continue;
+            val = (val << 6) + T[c];
+            valb += 6;
+            if (valb >= 0) {
+                out.push_back((val >> valb) & 0xFF);
+                valb -= 8;
+            }
+        }
+        return nlohmann::json::binary(out);
     } else if (type == "array") {
         nlohmann::json arr = nlohmann::json::array();
         const tinyxml2::XMLElement* data = child->FirstChildElement("data");
@@ -441,9 +466,8 @@ nlohmann::json PluginClient::parse_xmlrpc_value(const void* xml_node_ptr) {
             const tinyxml2::XMLElement* value_elem = member->FirstChildElement("value");
             if (name_elem && value_elem) {
                 const char* name_text = name_elem->GetText();
-                if (name_text) {
-                    obj[name_text] = parse_xmlrpc_value(value_elem);
-                }
+                std::string key = name_text ? name_text : "";
+                obj[key] = parse_xmlrpc_value(value_elem);
             }
         }
         return obj;
